@@ -1,0 +1,192 @@
+import { useEffect, useState } from "react";
+import {
+  ChooseBlogWorkDir,
+  ChooseWorkHourDBPath,
+  GetBlogWorkDir,
+  GetDefaultBlogWorkDir,
+  GetDefaultWorkHourDBPath,
+  GetWorkHourDBPath,
+  SetBlogWorkDir,
+  SetWorkHourDBPath,
+} from "../../wailsjs/go/main/App";
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  onSaved?: () => void;
+};
+
+export function PreferencesDialog({ open, onClose, onSaved }: Props) {
+  const [blogPath, setBlogPath] = useState("");
+  const [defaultBlogPath, setDefaultBlogPath] = useState("");
+  const [workHourPath, setWorkHourPath] = useState("");
+  const [defaultWorkHourPath, setDefaultWorkHourPath] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setError(null);
+    void (async () => {
+      try {
+        const [curBlog, defBlog, curWh, defWh] = await Promise.all([
+          GetBlogWorkDir(),
+          GetDefaultBlogWorkDir(),
+          GetWorkHourDBPath(),
+          GetDefaultWorkHourDBPath(),
+        ]);
+        setBlogPath(curBlog);
+        setDefaultBlogPath(defBlog);
+        setWorkHourPath(curWh);
+        setDefaultWorkHourPath(defWh);
+      } catch {
+        setBlogPath("");
+        setDefaultBlogPath("");
+        setWorkHourPath("");
+        setDefaultWorkHourPath("");
+      }
+    })();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const handleBrowseBlog = async () => {
+    setError(null);
+    try {
+      const picked = await ChooseBlogWorkDir();
+      if (picked) setBlogPath(picked);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  const handleBrowseWorkHour = async () => {
+    setError(null);
+    try {
+      const picked = await ChooseWorkHourDBPath();
+      if (picked) setWorkHourPath(picked);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  const handleSave = async () => {
+    const b = blogPath.trim();
+    if (!b) {
+      setError("Blog directory cannot be empty.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await SetBlogWorkDir(b);
+      await SetWorkHourDBPath(workHourPath.trim());
+      onSaved?.();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="max-h-[min(100%-2rem,90vh)] w-[min(100%-2rem,560px)] overflow-y-auto rounded border border-[var(--vscode-border)] bg-[#252526] p-4 shadow-xl"
+        role="dialog"
+        aria-labelledby="prefs-title"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <h2 id="prefs-title" className="mb-3 text-[13px] font-semibold text-[#cccccc]">
+          Preference
+        </h2>
+
+        <section className="mb-5">
+          <p className="mb-2 text-[12px] text-[#858585]">
+            Blog working directory. Default:{" "}
+            <span className="allow-select font-mono text-[#b5cea8]">{defaultBlogPath || "—"}</span>
+          </p>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">Directory</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="allow-select min-w-0 flex-1 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-2 py-1.5 font-mono text-[12px] text-[#cccccc] focus:border-[#007fd4] focus:outline-none"
+              value={blogPath}
+              onChange={(e) => setBlogPath(e.target.value)}
+              spellCheck={false}
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
+              onClick={() => void handleBrowseBlog()}
+            >
+              Browse…
+            </button>
+          </div>
+        </section>
+
+        <section className="mb-2">
+          <p className="mb-2 text-[12px] text-[#858585]">
+            Work hour SQLite file path. Default:{" "}
+            <span className="allow-select font-mono text-[#b5cea8]">{defaultWorkHourPath || "—"}</span>
+            {" · "}
+            Clear the field and save to use the default path.
+          </p>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">SQLite file</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="allow-select min-w-0 flex-1 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-2 py-1.5 font-mono text-[12px] text-[#cccccc] focus:border-[#007fd4] focus:outline-none"
+              value={workHourPath}
+              onChange={(e) => setWorkHourPath(e.target.value)}
+              spellCheck={false}
+              placeholder={defaultWorkHourPath || "work_hour.db"}
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
+              onClick={() => void handleBrowseWorkHour()}
+            >
+              Browse…
+            </button>
+          </div>
+        </section>
+
+        {error && <p className="mt-2 text-[12px] text-[#f48771]">{error}</p>}
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            className="rounded px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-white/10"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            className="rounded bg-[#0e639c] px-3 py-1.5 text-[12px] text-white hover:bg-[#1177bb] disabled:opacity-50"
+            onClick={() => void handleSave()}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

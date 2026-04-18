@@ -1,0 +1,8 @@
+node_modules
+frontend/dist
+.DS_Store
+*.log
+vendor-log.txt
+*.md5
+build/bin
+build/niumer

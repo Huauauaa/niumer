@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --vscode-editor-bg: #1e1e1e;
+  --vscode-sideBar-bg: #252526;
+  --vscode-activityBar-bg: #333333;
+  --vscode-tab-inactive: #2d2d2d;
+  --vscode-border: #3c3c3c;
+  --vscode-panel-bg: #181818;
+  --vscode-statusBar-bg: #007acc;
+  --vscode-menuBar-bg: #3c3c3c;
+  --vscode-titleBar-bg: #323233;
+  --vscode-list-hover: #2a2d2e;
+  --vscode-selection: #264f78;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--vscode-editor-bg);
+  color: #cccccc;
+  font-size: 13px;
+  user-select: none;
+}
+
+.allow-select {
+  user-select: text;
+}

@@ -1,0 +1,11 @@
+{
+  "terminal.integrated.env.osx": {
+    "GOPROXY": "https://proxy.golang.org,direct"
+  },
+  "terminal.integrated.env.linux": {
+    "GOPROXY": "https://proxy.golang.org,direct"
+  },
+  "terminal.integrated.env.windows": {
+    "GOPROXY": "https://proxy.golang.org,direct"
+  }
+}
