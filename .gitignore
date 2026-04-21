@@ -4,5 +4,7 @@ frontend/dist
 *.log
 vendor-log.txt
 *.md5
+# Wails `wails build` fingerprint (also matched by *.md5); safe to delete locally.
+frontend/package.json.md5
 build/bin
 build/niumer
