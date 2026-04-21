@@ -4,57 +4,35 @@ type Props = {
   records: AttendanceRecord[];
   loading: boolean;
   error: string | null;
-  dbPath: string;
   onRefresh: () => void;
 };
 
-const COLUMNS: { key: keyof AttendanceRecord; label: string }[] = [
-  { key: "id", label: "id" },
-  { key: "attendanceDate", label: "考勤日期" },
-  { key: "clockInTime", label: "打卡时间" },
-  { key: "attendanceStatus", label: "状态" },
-  { key: "workDay", label: "工作日" },
-  { key: "clockInType", label: "类型" },
-  { key: "hrId", label: "hrId" },
-  { key: "clockInDate", label: "clockInDate" },
-  { key: "dayId", label: "dayId" },
-  { key: "clockingInSequenceNumber", label: "序号" },
-  { key: "creationDate", label: "creationDate" },
-  { key: "createdBy", label: "createdBy" },
-  { key: "lastUpdateDate", label: "lastUpdateDate" },
-  { key: "lastUpdatedBy", label: "lastUpdatedBy" },
-  { key: "originalId", label: "originalId" },
-  { key: "dataSource", label: "dataSource" },
-  { key: "clockInReason", label: "clockInReason" },
-  { key: "earlyClockInTime", label: "earlyClockInTime" },
-  { key: "lateClockInTime", label: "lateClockInTime" },
-  { key: "earlyClockInType", label: "earlyClockInType" },
-  { key: "lateClockInType", label: "lateClockInType" },
-  { key: "minuteNumber", label: "minuteNumber" },
-  { key: "hourNumber", label: "hourNumber" },
-  { key: "attendProcessId", label: "attendProcessId" },
-  { key: "attendanceStatusCode", label: "attendanceStatusCode" },
-  { key: "earlyClockInReason", label: "earlyClockInReason" },
-  { key: "lateClockInReason", label: "lateClockInReason" },
-  { key: "earlyClockTag", label: "earlyClockTag" },
-  { key: "lateClockTag", label: "lateClockTag" },
+const COLUMNS: { label: string; cell: (r: AttendanceRecord) => string }[] = [
+  {
+    label: "日期",
+    cell: (r) => {
+      const d = (r.attendanceDate || r.clockInDate || "").trim();
+      return d.length >= 10 ? d.slice(0, 10) : d;
+    },
+  },
+  { label: "上班打卡时间", cell: (r) => (r.earlyClockInTime || "").trim() },
+  { label: "下班打卡时间", cell: (r) => (r.lateClockInTime || "").trim() },
+  {
+    label: "工时",
+    cell: (r) => {
+      const v = r.effectiveWorkHours;
+      if (v === null || v === undefined || Number.isNaN(Number(v))) return "";
+      return Number(v).toFixed(2);
+    },
+  },
 ];
 
-function cellValue(r: AttendanceRecord, key: keyof AttendanceRecord): string {
-  const v = r[key];
-  if (v === null || v === undefined) return "";
-  return String(v);
-}
-
-export function WorkHourView({ records, loading, error, dbPath, onRefresh }: Props) {
+export function WorkHourView({ records, loading, error, onRefresh }: Props) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--vscode-border)] px-4 py-2">
         <div className="min-w-0 flex-1">
           <div className="text-[13px] text-[#cccccc]">考勤记录</div>
-          <div className="truncate text-[11px] text-[#858585]" title={dbPath}>
-            {dbPath ? `数据库: ${dbPath}` : "数据库路径加载中…"}
-          </div>
         </div>
         <button
           type="button"
@@ -74,7 +52,7 @@ export function WorkHourView({ records, loading, error, dbPath, onRefresh }: Pro
             <tr>
               {COLUMNS.map((c) => (
                 <th
-                  key={c.key}
+                  key={c.label}
                   className="whitespace-nowrap border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[#858585]"
                 >
                   {c.label}
@@ -94,15 +72,18 @@ export function WorkHourView({ records, loading, error, dbPath, onRefresh }: Pro
             ) : null}
             {records.map((row, idx) => (
               <tr key={`${row.id}-${idx}`} className="hover:bg-[#2a2d2e]">
-                {COLUMNS.map((c) => (
-                  <td
-                    key={c.key}
-                    className="max-w-[14rem] truncate border-b border-r border-[var(--vscode-border)] px-2 py-1 font-mono text-[11px]"
-                    title={cellValue(row, c.key)}
-                  >
-                    {cellValue(row, c.key)}
-                  </td>
-                ))}
+                {COLUMNS.map((c) => {
+                  const text = c.cell(row);
+                  return (
+                    <td
+                      key={c.label}
+                      className="max-w-[14rem] truncate border-b border-r border-[var(--vscode-border)] px-2 py-1 font-mono text-[11px]"
+                      title={text}
+                    >
+                      {text}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

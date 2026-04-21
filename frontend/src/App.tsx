@@ -14,7 +14,6 @@ import {
   DeleteBlogFile,
   EnsureWelcomeBlogFile,
   GetBlogWorkDir,
-  GetWorkHourDBPath,
   GetWorkHourRecords,
   RefreshWorkHourData,
   ListBlogMarkdownFiles,
@@ -52,7 +51,6 @@ export default function App() {
   const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>([]);
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
-  const [workHourDbPath, setWorkHourDbPath] = useState("");
 
   const dragRef = useRef<"sidebar" | "panel" | null>(null);
 
@@ -95,12 +93,8 @@ export default function App() {
     setWorkHourLoading(true);
     setWorkHourError(null);
     try {
-      const [rows, dbPath] = await Promise.all([
-        GetWorkHourRecords(),
-        GetWorkHourDBPath().catch(() => ""),
-      ]);
+      const rows = await GetWorkHourRecords();
       setWorkHourRecords(rows as AttendanceRecord[]);
-      setWorkHourDbPath(dbPath);
     } catch (e) {
       setWorkHourError(e instanceof Error ? e.message : String(e));
       setWorkHourRecords([]);
@@ -116,8 +110,6 @@ export default function App() {
     try {
       const rows = await RefreshWorkHourData();
       setWorkHourRecords(rows as AttendanceRecord[]);
-      const dbPath = await GetWorkHourDBPath().catch(() => "");
-      setWorkHourDbPath(dbPath);
     } catch (e) {
       setWorkHourError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -339,9 +331,6 @@ export default function App() {
           void GetBlogWorkDir()
             .then(setBlogWorkDir)
             .catch(() => {});
-          void GetWorkHourDBPath()
-            .then(setWorkHourDbPath)
-            .catch(() => {});
           void refreshBlogFromDisk();
           void loadWorkHour();
         }}
@@ -359,8 +348,11 @@ export default function App() {
             onBlogNew={createBlogDoc}
             onBlogDelete={deleteBlogDoc}
             onBlogRename={renameBlogDoc}
-            workHourRecordCount={activity === "workhour" ? workHourRecords.length : undefined}
-            workHourDbPath={activity === "workhour" ? workHourDbPath : undefined}
+            workHourTotalEffectiveHours={
+              activity === "workhour"
+                ? workHourRecords.reduce((s, r) => s + (Number(r.effectiveWorkHours) || 0), 0)
+                : undefined
+            }
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <EditorGroup
@@ -377,7 +369,6 @@ export default function App() {
               workHourRecords={workHourRecords}
               workHourLoading={workHourLoading}
               workHourError={workHourError}
-              workHourDbPath={workHourDbPath}
               onRefreshWorkHour={refreshWorkHour}
             />
             <BottomPanel

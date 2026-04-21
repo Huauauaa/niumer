@@ -38,6 +38,8 @@ type AttendanceRecord struct {
 	LateClockInReason         string `json:"lateClockInReason"`
 	EarlyClockTag             string `json:"earlyClockTag"`
 	LateClockTag              string `json:"lateClockTag"`
+	// EffectiveWorkHours 由应用层根据打卡与有效时段计算，不写入 SQLite。
+	EffectiveWorkHours float64 `json:"effectiveWorkHours"`
 }
 
 const workHourSchema = `
@@ -153,7 +155,7 @@ func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 		); err != nil {
 			return nil, err
 		}
-		out = append(out, AttendanceRecord{
+		rec := AttendanceRecord{
 			ID:                       ni(id),
 			CreationDate:             ns(creationDate),
 			CreatedBy:                ns(createdBy),
@@ -183,7 +185,9 @@ func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 			LateClockInReason:        ns(lateClockInReason),
 			EarlyClockTag:            ns(earlyClockTag),
 			LateClockTag:             ns(lateClockTag),
-		})
+		}
+		rec.EffectiveWorkHours = effectiveWorkHoursForRecord(rec)
+		out = append(out, rec)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

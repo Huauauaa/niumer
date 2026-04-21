@@ -29,4 +29,6 @@ export type AttendanceRecord = {
   lateClockInReason: string;
   earlyClockTag: string;
   lateClockTag: string;
+  /** 有效工时（小时）：两段打卡均存在时，与 8–12、13:30–17:30、18–24 时段的交集；否则 0 */
+  effectiveWorkHours: number;
 };

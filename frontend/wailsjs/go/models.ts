@@ -30,6 +30,7 @@ export namespace main {
 	    lateClockInReason: string;
 	    earlyClockTag: string;
 	    lateClockTag: string;
+	    effectiveWorkHours: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new AttendanceRecord(source);
@@ -66,6 +67,7 @@ export namespace main {
 	        this.lateClockInReason = source["lateClockInReason"];
 	        this.earlyClockTag = source["earlyClockTag"];
 	        this.lateClockTag = source["lateClockTag"];
+	        this.effectiveWorkHours = source["effectiveWorkHours"];
 	    }
 	}
 

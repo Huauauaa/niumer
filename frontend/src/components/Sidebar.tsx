@@ -13,9 +13,8 @@ type Props = {
   onBlogNew: () => void;
   onBlogDelete: (id: string) => void;
   onBlogRename: (oldName: string, newName: string) => void | Promise<void>;
-  /** Work hour sidebar summary */
-  workHourRecordCount?: number;
-  workHourDbPath?: string;
+  /** 各条记录 effectiveWorkHours 之和（小时） */
+  workHourTotalEffectiveHours?: number;
 };
 
 const rowClass =
@@ -230,8 +229,7 @@ function SidebarBody({
   onBlogNew,
   onBlogDelete,
   onBlogRename,
-  workHourRecordCount,
-  workHourDbPath,
+  workHourTotalEffectiveHours,
 }: Omit<Props, "width" | "onResizeStart">) {
   if (activity === "blog") {
     return (
@@ -297,21 +295,21 @@ function SidebarBody({
       <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">Workhour</div>
       <div className="allow-select min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 text-[13px] text-[#cccccc]">
         <div>
-          <div className="mb-1 text-[11px] uppercase text-[#858585]">Records</div>
-          <div className="font-mono text-[#b5cea8]">
-            {workHourRecordCount === undefined ? "—" : workHourRecordCount}
+          <div className="mb-1 text-[11px] uppercase text-[#858585]">总工时</div>
+          <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
+            {workHourTotalEffectiveHours === undefined
+              ? "—"
+              : `${workHourTotalEffectiveHours.toFixed(2)} h`}
           </div>
         </div>
         <div>
-          <div className="mb-1 text-[11px] uppercase text-[#858585]">Database</div>
-          <div className="break-all font-mono text-[11px] leading-snug text-[#858585]" title={workHourDbPath}>
-            {workHourDbPath || "—"}
-          </div>
+          <div className="mb-1.5 text-[11px] uppercase text-[#858585]">作息</div>
+          <ul className="space-y-1 font-mono text-[12px] leading-snug text-[#858585]">
+            <li>08:00 – 12:00</li>
+            <li>13:30 – 17:30</li>
+            <li>18:00 – 24:00</li>
+          </ul>
         </div>
-        <p className="text-[11px] leading-snug text-[#858585]">
-          主区域展示 <code className="rounded bg-[#2d2d2d] px-1 py-0.5 font-mono">attendance_records</code>{" "}
-          ；进入页面仅从数据库读取。「刷新」由 Go 无头浏览器取 Cookie 后拉取并入库。
-        </p>
       </div>
     </div>
   );

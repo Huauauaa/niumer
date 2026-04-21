@@ -21,7 +21,6 @@ type Props = {
   workHourRecords?: AttendanceRecord[];
   workHourLoading?: boolean;
   workHourError?: string | null;
-  workHourDbPath?: string;
   onRefreshWorkHour?: () => void;
 };
 
@@ -55,7 +54,6 @@ export function EditorGroup({
   workHourRecords = [],
   workHourLoading = false,
   workHourError = null,
-  workHourDbPath = "",
   onRefreshWorkHour,
 }: Props) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
@@ -143,7 +141,6 @@ export function EditorGroup({
             records={workHourRecords}
             loading={workHourLoading}
             error={workHourError}
-            dbPath={workHourDbPath}
             onRefresh={onRefreshWorkHour ?? (() => {})}
           />
         ) : showBlogEmpty ? (
