@@ -14,7 +14,7 @@ import (
 
 // 与 scripts/work-hour/get_work_hour.py 中 get_cookies 一致（无头 Chromium + 等待选择器）。
 const (
-	defaultWorkHourLoginURL = "https://example.com/login"
+	defaultWorkHourLoginURL = "http://127.0.0.1:17890/login"
 	defaultWorkHourWaitCSS  = ".search-total__num"
 )
 
@@ -44,8 +44,10 @@ func getCookiesViaChromedp(parentCtx context.Context) (map[string]string, error)
 
 	waitCtx, cancelWait := context.WithTimeout(browserCtx, 15*time.Second)
 	defer cancelWait()
-	if err := chromedp.Run(waitCtx, chromedp.WaitVisible(sel, chromedp.ByQuery)); err != nil {
-		return nil, fmt.Errorf("登录失败: 未在 15s 内出现 %s（请开启免密登录）: %w", sel, err)
+	// WaitReady avoids headless false negatives where the node is in the DOM but
+	// WaitVisible never sees a stable box (common on minimal mock pages).
+	if err := chromedp.Run(waitCtx, chromedp.WaitReady(sel, chromedp.ByQuery)); err != nil {
+		return nil, fmt.Errorf("登录失败: 未在 15s 内就绪 %s（请开启免密登录）: %w", sel, err)
 	}
 
 	var cookies []*network.Cookie

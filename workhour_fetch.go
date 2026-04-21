@@ -17,9 +17,9 @@ import (
 
 // 默认占位 URL；可用 WORK_HOUR_* 环境变量覆盖。
 const (
-	defaultTenantURL      = "https://example.com/id"
-	defaultHrIDURL        = "https://example.com/hr-id"
-	defaultWorkHourAPIURL = "https://example.com/work-hour"
+	defaultTenantURL      = "http://127.0.0.1:17890/id"
+	defaultHrIDURL        = "http://127.0.0.1:17890/hr-id"
+	defaultWorkHourAPIURL = "http://127.0.0.1:17890/work-hour"
 )
 
 func envOr(key, def string) string {
