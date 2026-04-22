@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import {
   ChooseBlogWorkDir,
+  ChooseJsonFormatterWorkDir,
   ChooseWorkHourDBPath,
   GetBlogWorkDir,
   GetDefaultBlogWorkDir,
+  GetDefaultJsonFormatterWorkDir,
   GetDefaultWorkHourDBPath,
+  GetJsonFormatterWorkDir,
   GetWorkHourDBPath,
   SetBlogWorkDir,
+  SetJsonFormatterWorkDir,
   SetWorkHourDBPath,
 } from "../../wailsjs/go/main/App";
 
@@ -19,6 +23,8 @@ type Props = {
 export function PreferencesDialog({ open, onClose, onSaved }: Props) {
   const [blogPath, setBlogPath] = useState("");
   const [defaultBlogPath, setDefaultBlogPath] = useState("");
+  const [jsonFormatterPath, setJsonFormatterPath] = useState("");
+  const [defaultJsonFormatterPath, setDefaultJsonFormatterPath] = useState("");
   const [workHourPath, setWorkHourPath] = useState("");
   const [defaultWorkHourPath, setDefaultWorkHourPath] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,19 +35,26 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
     setError(null);
     void (async () => {
       try {
-        const [curBlog, defBlog, curWh, defWh] = await Promise.all([
-          GetBlogWorkDir(),
-          GetDefaultBlogWorkDir(),
-          GetWorkHourDBPath(),
-          GetDefaultWorkHourDBPath(),
-        ]);
+        const [curBlog, defBlog, curJson, defJson, curWh, defWh] =
+          await Promise.all([
+            GetBlogWorkDir(),
+            GetDefaultBlogWorkDir(),
+            GetJsonFormatterWorkDir(),
+            GetDefaultJsonFormatterWorkDir(),
+            GetWorkHourDBPath(),
+            GetDefaultWorkHourDBPath(),
+          ]);
         setBlogPath(curBlog);
         setDefaultBlogPath(defBlog);
+        setJsonFormatterPath(curJson);
+        setDefaultJsonFormatterPath(defJson);
         setWorkHourPath(curWh);
         setDefaultWorkHourPath(defWh);
       } catch {
         setBlogPath("");
         setDefaultBlogPath("");
+        setJsonFormatterPath("");
+        setDefaultJsonFormatterPath("");
         setWorkHourPath("");
         setDefaultWorkHourPath("");
       }
@@ -69,6 +82,16 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
     }
   };
 
+  const handleBrowseJsonFormatter = async () => {
+    setError(null);
+    try {
+      const picked = await ChooseJsonFormatterWorkDir();
+      if (picked) setJsonFormatterPath(picked);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   const handleBrowseWorkHour = async () => {
     setError(null);
     try {
@@ -85,10 +108,16 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
       setError("Blog directory cannot be empty.");
       return;
     }
+    const j = jsonFormatterPath.trim();
+    if (!j) {
+      setError("JSON formatter directory cannot be empty.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       await SetBlogWorkDir(b);
+      await SetJsonFormatterWorkDir(j);
       await SetWorkHourDBPath(workHourPath.trim());
       onSaved?.();
       onClose();
@@ -121,8 +150,10 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
         </h2>
 
         <section className="mb-5">
-          <p className="mb-2 text-[12px] text-[#858585]">
-            Blog working directory. Default:{" "}
+          <p className="mb-2 text-[12px] leading-relaxed text-[#858585]">
+            博客 Markdown
+            仅保存在本机该目录；在此修改路径并保存后会写入应用配置。Blog files
+            stay on disk only under the path below. Built-in default if unset:{" "}
             <span className="allow-select font-mono text-[#b5cea8]">
               {defaultBlogPath || "—"}
             </span>
@@ -142,6 +173,38 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
               type="button"
               className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
               onClick={() => void handleBrowseBlog()}
+            >
+              Browse…
+            </button>
+          </div>
+        </section>
+
+        <section className="mb-5">
+          <p className="mb-2 text-[12px] leading-relaxed text-[#858585]">
+            JSON 格式化器草稿保存在本机目录下的{" "}
+            <span className="font-mono">draft.json</span>
+            。macOS / Linux / Windows 默认均为用户「文档」下的{" "}
+            <span className="font-mono">niumer-json-formatter</span>
+            （与博客目录规则一致）。Built-in default if unset:{" "}
+            <span className="allow-select font-mono text-[#b5cea8]">
+              {defaultJsonFormatterPath || "—"}
+            </span>
+          </p>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">
+            JSON formatter directory
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="allow-select min-w-0 flex-1 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-2 py-1.5 font-mono text-[12px] text-[#cccccc] focus:border-[#007fd4] focus:outline-none"
+              value={jsonFormatterPath}
+              onChange={(e) => setJsonFormatterPath(e.target.value)}
+              spellCheck={false}
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
+              onClick={() => void handleBrowseJsonFormatter()}
             >
               Browse…
             </button>

@@ -70,6 +70,7 @@ npm run dev
 | 字段 | 说明 |
 |------|------|
 | `blogWorkDir` | 博客 / Markdown 工作目录，默认 `~/Documents/niumer-blog` |
+| `jsonFormatterWorkDir` | JSON 格式化器草稿目录，默认 `~/Documents/niumer-json-formatter`（Windows / Linux 亦为「用户目录/Documents/…」）；目录内保存 `draft.json` |
 | `workHourDbPath` | 考勤 SQLite 文件路径；留空则使用下文的默认 `work_hour.db` |
 
 可在应用内通过偏好设置修改；也可直接编辑 JSON（修改后重启或按界面逻辑重新加载）。

@@ -14,16 +14,23 @@ import {
   DeleteBlogFile,
   EnsureWelcomeBlogFile,
   GetBlogWorkDir,
+  GetJsonFormatterWorkDir,
   GetWorkHourRecords,
   RefreshWorkHourData,
   ListBlogMarkdownFiles,
   ReadBlogFile,
+  ReadJsonFormatterDraft,
   RenameBlogFile,
   WriteBlogFile,
+  WriteJsonFormatterDraft,
 } from "../wailsjs/go/main/App";
 import type { AttendanceRecord } from "./types/workhour";
 
 const OTHER_TAB_ID = "_home";
+
+const JSON_FORMATTER_INITIAL = `{
+  "content": "hi, niumer"
+}`;
 
 const DEV_FALLBACK_WELCOME = `# Welcome
 
@@ -44,9 +51,14 @@ export default function App() {
   blogDocsRef.current = blogDocs;
 
   const [otherActiveId, setOtherActiveId] = useState(OTHER_TAB_ID);
+  const [jsonFormatterText, setJsonFormatterText] = useState(
+    JSON_FORMATTER_INITIAL,
+  );
+  const [jsonDraftLoaded, setJsonDraftLoaded] = useState(false);
 
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [blogWorkDir, setBlogWorkDir] = useState("");
+  const [jsonFormatterWorkDir, setJsonFormatterWorkDir] = useState("");
 
   const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>(
     [],
@@ -119,11 +131,38 @@ export default function App() {
     }
   }, []);
 
+  const reloadJsonFormatterDraft = useCallback(async () => {
+    setJsonDraftLoaded(false);
+    try {
+      const disk = await ReadJsonFormatterDraft();
+      setJsonFormatterText(disk.trim() !== "" ? disk : JSON_FORMATTER_INITIAL);
+    } catch {
+      setJsonFormatterText(JSON_FORMATTER_INITIAL);
+    } finally {
+      setJsonDraftLoaded(true);
+    }
+  }, []);
+
   useEffect(() => {
     void GetBlogWorkDir()
       .then(setBlogWorkDir)
       .catch(() => {});
+    void GetJsonFormatterWorkDir()
+      .then(setJsonFormatterWorkDir)
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    void reloadJsonFormatterDraft();
+  }, [reloadJsonFormatterDraft]);
+
+  useEffect(() => {
+    if (!jsonDraftLoaded) return;
+    const t = window.setTimeout(() => {
+      void WriteJsonFormatterDraft(jsonFormatterText).catch(() => {});
+    }, 450);
+    return () => window.clearTimeout(t);
+  }, [jsonFormatterText, jsonDraftLoaded]);
 
   useEffect(() => {
     if (activity !== "workhour") return;
@@ -329,7 +368,9 @@ export default function App() {
       ? blogTabs
       : activity === "workhour"
         ? [{ id: OTHER_TAB_ID, title: "Workhour", dirty: false }]
-        : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
+        : activity === "tool"
+          ? [{ id: OTHER_TAB_ID, title: "JSON formatter", dirty: false }]
+          : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
 
   const editorActiveId = activity === "blog" ? blogActiveId : otherActiveId;
 
@@ -348,8 +389,12 @@ export default function App() {
           void GetBlogWorkDir()
             .then(setBlogWorkDir)
             .catch(() => {});
+          void GetJsonFormatterWorkDir()
+            .then(setJsonFormatterWorkDir)
+            .catch(() => {});
           void refreshBlogFromDisk();
           void loadWorkHour();
+          void reloadJsonFormatterDraft();
         }}
       />
       <div className="flex min-h-0 flex-1 flex-col">
@@ -392,6 +437,9 @@ export default function App() {
               workHourLoading={workHourLoading}
               workHourError={workHourError}
               onRefreshWorkHour={refreshWorkHour}
+              jsonFormatterView={activity === "tool"}
+              jsonFormatterContent={jsonFormatterText}
+              onJsonFormatterContentChange={setJsonFormatterText}
             />
             <BottomPanel
               height={panelHeight}
@@ -401,7 +449,10 @@ export default function App() {
             />
           </div>
         </div>
-        <StatusBar blogWorkDir={blogWorkDir} />
+        <StatusBar
+          blogWorkDir={blogWorkDir}
+          jsonFormatterWorkDir={jsonFormatterWorkDir}
+        />
       </div>
     </div>
   );

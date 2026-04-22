@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AttendanceRecord } from "../types/workhour";
+import { JsonFormatterView } from "./JsonFormatterView";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { WorkHourView } from "./WorkHourView";
 
@@ -23,6 +24,10 @@ type Props = {
   workHourLoading?: boolean;
   workHourError?: string | null;
   onRefreshWorkHour?: () => void;
+  /** Tool: JSON formatter (Postman-style body editor). */
+  jsonFormatterView?: boolean;
+  jsonFormatterContent?: string;
+  onJsonFormatterContentChange?: (value: string) => void;
 };
 
 const sampleLines = [
@@ -56,6 +61,9 @@ export function EditorGroup({
   workHourLoading = false,
   workHourError = null,
   onRefreshWorkHour,
+  jsonFormatterView = false,
+  jsonFormatterContent = "",
+  onJsonFormatterContentChange,
 }: Props) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -136,6 +144,10 @@ export function EditorGroup({
               <>
                 workhour › <span className="text-[#e37933]">attendance</span>
               </>
+            ) : jsonFormatterView ? (
+              <>
+                tool › <span className="text-[#e37933]">JSON formatter</span>
+              </>
             ) : (
               <>
                 niumer ›{" "}
@@ -171,6 +183,11 @@ export function EditorGroup({
             No open document. Create a new file or open one from the Blog
             explorer.
           </div>
+        ) : jsonFormatterView && onJsonFormatterContentChange ? (
+          <JsonFormatterView
+            value={jsonFormatterContent}
+            onChange={onJsonFormatterContentChange}
+          />
         ) : blogEditor ? (
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="allow-select flex min-h-0 min-w-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">

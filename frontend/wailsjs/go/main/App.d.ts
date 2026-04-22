@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function ChooseBlogWorkDir():Promise<string>;
 
+export function ChooseJsonFormatterWorkDir():Promise<string>;
+
 export function ChooseWorkHourDBPath():Promise<string>;
 
 export function DeleteBlogFile(arg1:string):Promise<void>;
@@ -14,7 +16,11 @@ export function GetBlogWorkDir():Promise<string>;
 
 export function GetDefaultBlogWorkDir():Promise<string>;
 
+export function GetDefaultJsonFormatterWorkDir():Promise<string>;
+
 export function GetDefaultWorkHourDBPath():Promise<string>;
+
+export function GetJsonFormatterWorkDir():Promise<string>;
 
 export function GetWorkHourDBPath():Promise<string>;
 
@@ -24,12 +30,18 @@ export function ListBlogMarkdownFiles():Promise<Array<string>>;
 
 export function ReadBlogFile(arg1:string):Promise<string>;
 
+export function ReadJsonFormatterDraft():Promise<string>;
+
 export function RefreshWorkHourData():Promise<Array<main.AttendanceRecord>>;
 
 export function RenameBlogFile(arg1:string,arg2:string):Promise<void>;
 
 export function SetBlogWorkDir(arg1:string):Promise<void>;
 
+export function SetJsonFormatterWorkDir(arg1:string):Promise<void>;
+
 export function SetWorkHourDBPath(arg1:string):Promise<void>;
 
 export function WriteBlogFile(arg1:string,arg2:string):Promise<void>;
+
+export function WriteJsonFormatterDraft(arg1:string):Promise<void>;

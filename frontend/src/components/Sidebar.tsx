@@ -275,16 +275,8 @@ function SidebarBody({
         </div>
         <div className="flex flex-col gap-0.5 px-1 pb-2">
           <button type="button" className={rowClass}>
-            <span className="font-mono text-[12px] text-[#b5cea8]">$</span>
-            <span>Script runner</span>
-          </button>
-          <button type="button" className={rowClass}>
             <span className="text-[#569cd6]">{}</span>
             <span>JSON formatter</span>
-          </button>
-          <button type="button" className={rowClass}>
-            <span className="text-[#ce9178]">#</span>
-            <span>Encode / decode</span>
           </button>
         </div>
       </div>

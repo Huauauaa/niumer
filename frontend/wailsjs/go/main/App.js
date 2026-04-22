@@ -6,6 +6,10 @@ export function ChooseBlogWorkDir() {
   return window['go']['main']['App']['ChooseBlogWorkDir']();
 }
 
+export function ChooseJsonFormatterWorkDir() {
+  return window['go']['main']['App']['ChooseJsonFormatterWorkDir']();
+}
+
 export function ChooseWorkHourDBPath() {
   return window['go']['main']['App']['ChooseWorkHourDBPath']();
 }
@@ -26,8 +30,16 @@ export function GetDefaultBlogWorkDir() {
   return window['go']['main']['App']['GetDefaultBlogWorkDir']();
 }
 
+export function GetDefaultJsonFormatterWorkDir() {
+  return window['go']['main']['App']['GetDefaultJsonFormatterWorkDir']();
+}
+
 export function GetDefaultWorkHourDBPath() {
   return window['go']['main']['App']['GetDefaultWorkHourDBPath']();
+}
+
+export function GetJsonFormatterWorkDir() {
+  return window['go']['main']['App']['GetJsonFormatterWorkDir']();
 }
 
 export function GetWorkHourDBPath() {
@@ -46,6 +58,10 @@ export function ReadBlogFile(arg1) {
   return window['go']['main']['App']['ReadBlogFile'](arg1);
 }
 
+export function ReadJsonFormatterDraft() {
+  return window['go']['main']['App']['ReadJsonFormatterDraft']();
+}
+
 export function RefreshWorkHourData() {
   return window['go']['main']['App']['RefreshWorkHourData']();
 }
@@ -58,10 +74,18 @@ export function SetBlogWorkDir(arg1) {
   return window['go']['main']['App']['SetBlogWorkDir'](arg1);
 }
 
+export function SetJsonFormatterWorkDir(arg1) {
+  return window['go']['main']['App']['SetJsonFormatterWorkDir'](arg1);
+}
+
 export function SetWorkHourDBPath(arg1) {
   return window['go']['main']['App']['SetWorkHourDBPath'](arg1);
 }
 
 export function WriteBlogFile(arg1, arg2) {
   return window['go']['main']['App']['WriteBlogFile'](arg1, arg2);
+}
+
+export function WriteJsonFormatterDraft(arg1) {
+  return window['go']['main']['App']['WriteJsonFormatterDraft'](arg1);
 }

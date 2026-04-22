@@ -2,9 +2,15 @@ type Props = {
   branch?: string;
   /** Current blog working directory (from preferences). */
   blogWorkDir?: string;
+  /** JSON formatter draft directory (draft.json). */
+  jsonFormatterWorkDir?: string;
 };
 
-export function StatusBar({ branch = "main", blogWorkDir }: Props) {
+export function StatusBar({
+  branch = "main",
+  blogWorkDir,
+  jsonFormatterWorkDir,
+}: Props) {
   return (
     <footer
       className="flex h-[22px] shrink-0 items-center justify-between gap-2 border-t border-[#007acc] px-2 text-[12px] text-white"
@@ -25,6 +31,14 @@ export function StatusBar({ branch = "main", blogWorkDir }: Props) {
             title={blogWorkDir}
           >
             Blog: {blogWorkDir}
+          </span>
+        ) : null}
+        {jsonFormatterWorkDir ? (
+          <span
+            className="allow-select min-w-0 truncate font-mono text-[11px] opacity-90"
+            title={jsonFormatterWorkDir}
+          >
+            JSON: {jsonFormatterWorkDir}
           </span>
         ) : null}
         <span className="hidden shrink-0 opacity-80 sm:inline">
