@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import {
   ChooseBlogWorkDir,
   ChooseJsonFormatterWorkDir,
+  ChooseReminderDBPath,
   ChooseWorkHourDBPath,
   GetBlogWorkDir,
   GetDefaultBlogWorkDir,
   GetDefaultJsonFormatterWorkDir,
+  GetDefaultReminderDBPath,
   GetDefaultWorkHourDBPath,
   GetJsonFormatterWorkDir,
+  GetReminderDBPath,
   GetWorkHourDBPath,
   SetBlogWorkDir,
   SetJsonFormatterWorkDir,
+  SetReminderDBPath,
   SetWorkHourDBPath,
 } from "../../wailsjs/go/main/App";
 
@@ -27,6 +31,8 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
   const [defaultJsonFormatterPath, setDefaultJsonFormatterPath] = useState("");
   const [workHourPath, setWorkHourPath] = useState("");
   const [defaultWorkHourPath, setDefaultWorkHourPath] = useState("");
+  const [reminderDbPath, setReminderDbPath] = useState("");
+  const [defaultReminderDbPath, setDefaultReminderDbPath] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -35,7 +41,7 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
     setError(null);
     void (async () => {
       try {
-        const [curBlog, defBlog, curJson, defJson, curWh, defWh] =
+        const [curBlog, defBlog, curJson, defJson, curWh, defWh, curRm, defRm] =
           await Promise.all([
             GetBlogWorkDir(),
             GetDefaultBlogWorkDir(),
@@ -43,6 +49,8 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
             GetDefaultJsonFormatterWorkDir(),
             GetWorkHourDBPath(),
             GetDefaultWorkHourDBPath(),
+            GetReminderDBPath(),
+            GetDefaultReminderDBPath(),
           ]);
         setBlogPath(curBlog);
         setDefaultBlogPath(defBlog);
@@ -50,6 +58,8 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
         setDefaultJsonFormatterPath(defJson);
         setWorkHourPath(curWh);
         setDefaultWorkHourPath(defWh);
+        setReminderDbPath(curRm);
+        setDefaultReminderDbPath(defRm);
       } catch {
         setBlogPath("");
         setDefaultBlogPath("");
@@ -57,6 +67,8 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
         setDefaultJsonFormatterPath("");
         setWorkHourPath("");
         setDefaultWorkHourPath("");
+        setReminderDbPath("");
+        setDefaultReminderDbPath("");
       }
     })();
   }, [open]);
@@ -102,6 +114,16 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
     }
   };
 
+  const handleBrowseReminderDb = async () => {
+    setError(null);
+    try {
+      const picked = await ChooseReminderDBPath();
+      if (picked) setReminderDbPath(picked);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   const handleSave = async () => {
     const b = blogPath.trim();
     if (!b) {
@@ -119,6 +141,7 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
       await SetBlogWorkDir(b);
       await SetJsonFormatterWorkDir(j);
       await SetWorkHourDBPath(workHourPath.trim());
+      await SetReminderDBPath(reminderDbPath.trim());
       onSaved?.();
       onClose();
     } catch (e) {
@@ -211,7 +234,7 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
           </div>
         </section>
 
-        <section className="mb-2">
+        <section className="mb-5">
           <p className="mb-2 text-[12px] text-[#858585]">
             Work hour SQLite file path. Default:{" "}
             <span className="allow-select font-mono text-[#b5cea8]">
@@ -221,7 +244,7 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
             Clear the field and save to use the default path.
           </p>
           <label className="mb-1 block text-[11px] uppercase text-[#858585]">
-            SQLite file
+            Workhour SQLite file
           </label>
           <div className="flex gap-2">
             <input
@@ -236,6 +259,40 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
               type="button"
               className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
               onClick={() => void handleBrowseWorkHour()}
+            >
+              Browse…
+            </button>
+          </div>
+        </section>
+
+        <section className="mb-2">
+          <p className="mb-2 text-[12px] text-[#858585]">
+            个人提醒数据保存在 SQLite 文件（表{" "}
+            <span className="font-mono">custom_reminders</span>
+            ）。默认与工时库同目录下的{" "}
+            <span className="font-mono">reminder.db</span>。Default:{" "}
+            <span className="allow-select font-mono text-[#b5cea8]">
+              {defaultReminderDbPath || "—"}
+            </span>
+            {" · "}
+            清空路径并保存则恢复默认位置。
+          </p>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">
+            Reminder SQLite file
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="allow-select min-w-0 flex-1 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-2 py-1.5 font-mono text-[12px] text-[#cccccc] focus:border-[#007fd4] focus:outline-none"
+              value={reminderDbPath}
+              onChange={(e) => setReminderDbPath(e.target.value)}
+              spellCheck={false}
+              placeholder={defaultReminderDbPath || "reminder.db"}
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545]"
+              onClick={() => void handleBrowseReminderDb()}
             >
               Browse…
             </button>

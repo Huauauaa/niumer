@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { normalizeMarkdownFileName, type BlogDocument } from "../types/blog";
 import type { ActivityId } from "./ActivityBar";
+import { ReminderCustomSidebar } from "./ReminderCustomSidebar";
+import type { CustomReminder } from "../types/reminder";
 import type {
   PullRequestListItem,
   PullRequestState,
@@ -28,6 +30,13 @@ type Props = {
   pullRequestSelectedNumber?: number | null;
   onPullRequestSelect?: (item: PullRequestListItem) => void;
   onPullRequestPageChange?: (page: number) => void;
+  /** Reminder activity: custom dated items */
+  customReminders?: CustomReminder[];
+  selectedReminderId?: string | null;
+  onReminderSelect?: (id: string | null) => void;
+  onReminderAdd?: (name: string, date: string) => Promise<void>;
+  onReminderUpdate?: (id: string, name: string, date: string) => Promise<void>;
+  onReminderDelete?: (row: CustomReminder) => Promise<void>;
 };
 
 const rowClass =
@@ -280,6 +289,12 @@ function SidebarBody({
   pullRequestSelectedNumber = null,
   onPullRequestSelect,
   onPullRequestPageChange,
+  customReminders = [],
+  selectedReminderId = null,
+  onReminderSelect,
+  onReminderAdd,
+  onReminderUpdate,
+  onReminderDelete,
 }: Omit<Props, "width" | "onResizeStart">) {
   if (activity === "blog") {
     return (
@@ -395,6 +410,29 @@ function SidebarBody({
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (activity === "reminder") {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+          提醒
+        </div>
+        {onReminderAdd &&
+        onReminderUpdate &&
+        onReminderDelete &&
+        onReminderSelect ? (
+          <ReminderCustomSidebar
+            items={customReminders}
+            selectedId={selectedReminderId}
+            onSelect={onReminderSelect}
+            onAdd={onReminderAdd}
+            onUpdate={onReminderUpdate}
+            onDelete={onReminderDelete}
+          />
+        ) : null}
       </div>
     );
   }

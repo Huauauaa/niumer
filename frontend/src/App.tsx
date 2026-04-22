@@ -11,22 +11,35 @@ import { StatusBar } from "./components/StatusBar";
 import type { BlogDocument } from "./types/blog";
 import { nextUntitledFileName } from "./types/blog";
 import {
+  AddCustomReminder,
   DeleteBlogFile,
+  DeleteCustomReminder,
   EnsureWelcomeBlogFile,
   GetBlogWorkDir,
   GetJsonFormatterWorkDir,
+  GetReminderDBPath,
   GetWorkHourRecords,
-  RefreshWorkHourData,
   ListBlogMarkdownFiles,
+  ListCustomReminders,
   ReadBlogFile,
   ReadJsonFormatterDraft,
+  RefreshWorkHourData,
   RenameBlogFile,
+  UpdateCustomReminder,
   WriteBlogFile,
   WriteJsonFormatterDraft,
 } from "../wailsjs/go/main/App";
+import type { CustomReminder } from "./types/reminder";
 import type { AttendanceRecord } from "./types/workhour";
 import type { PullRequestListItem } from "./types/pullRequest";
 import { fetchPullRequests } from "./api/pullRequest";
+import {
+  clearLegacyCustomReminders,
+  hasReminderSqliteMigrationDone,
+  loadCustomReminders,
+  markReminderSqliteMigrationDone,
+} from "./utils/customRemindersStorage";
+import { normalizeCustomReminderRow } from "./utils/reminderRow";
 
 const OTHER_TAB_ID = "_home";
 const PR_LIST_PAGE_SIZE = 10;
@@ -62,6 +75,7 @@ export default function App() {
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [blogWorkDir, setBlogWorkDir] = useState("");
   const [jsonFormatterWorkDir, setJsonFormatterWorkDir] = useState("");
+  const [reminderDbPath, setReminderDbPath] = useState("");
 
   const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>(
     [],
@@ -78,7 +92,94 @@ export default function App() {
     null,
   );
 
+  const [customReminders, setCustomReminders] = useState<CustomReminder[]>([]);
+  const [selectedReminderId, setSelectedReminderId] = useState<string | null>(
+    null,
+  );
+
   const dragRef = useRef<"sidebar" | "panel" | null>(null);
+
+  const reloadReminders = useCallback(
+    async (opts?: { selectId?: string | null }) => {
+      const prefer = opts?.selectId;
+      try {
+        let rows = await ListCustomReminders();
+        let list: CustomReminder[] = rows
+          .map((r) => normalizeCustomReminderRow(r))
+          .filter((r) => r.id !== "");
+        if (list.length === 0) {
+          const legacy = loadCustomReminders();
+          if (legacy.length > 0 && !hasReminderSqliteMigrationDone()) {
+            for (const r of legacy) {
+              await AddCustomReminder(r.name, r.date);
+            }
+            rows = await ListCustomReminders();
+            list = rows
+              .map((r) => normalizeCustomReminderRow(r))
+              .filter((r) => r.id !== "");
+          }
+        }
+        markReminderSqliteMigrationDone();
+        clearLegacyCustomReminders();
+        setCustomReminders(list);
+        setSelectedReminderId((cur) => {
+          if (prefer != null && list.some((r) => r.id === prefer)) {
+            return prefer;
+          }
+          if (list.length === 0) return null;
+          if (cur != null && list.some((r) => r.id === cur)) return cur;
+          return list[0]!.id;
+        });
+      } catch {
+        if (!hasReminderSqliteMigrationDone()) {
+          const legacy = loadCustomReminders();
+          setCustomReminders(legacy);
+          setSelectedReminderId((cur) => {
+            if (legacy.length === 0) return null;
+            if (cur != null && legacy.some((r) => r.id === cur)) return cur;
+            return legacy[0]!.id;
+          });
+        }
+        // 已完成 SQLite 迁移后：绝不用 localStorage 覆盖列表（否则删空/删后会被旧缓存「复活」）
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    void reloadReminders();
+  }, [reloadReminders]);
+
+  const handleReminderAdd = useCallback(
+    async (name: string, date: string) => {
+      const id = await AddCustomReminder(name, date);
+      await reloadReminders({ selectId: id });
+    },
+    [reloadReminders],
+  );
+
+  const handleReminderUpdate = useCallback(
+    async (id: string, name: string, date: string) => {
+      await UpdateCustomReminder(id, name, date);
+      await reloadReminders();
+    },
+    [reloadReminders],
+  );
+
+  const handleReminderDelete = useCallback(
+    async (row: CustomReminder) => {
+      const id = row.id.trim();
+      const name = row.name.trim();
+      const date = row.date.trim();
+      if (!id && (!name || !/^\d{4}-\d{2}-\d{2}$/.test(date))) {
+        window.alert("内部错误：无法识别该提醒，请刷新页面。");
+        return;
+      }
+      await DeleteCustomReminder(id, name, date);
+      await reloadReminders();
+    },
+    [reloadReminders],
+  );
 
   const refreshBlogFromDisk = useCallback(async () => {
     try {
@@ -161,6 +262,9 @@ export default function App() {
       .catch(() => {});
     void GetJsonFormatterWorkDir()
       .then(setJsonFormatterWorkDir)
+      .catch(() => {});
+    void GetReminderDBPath()
+      .then(setReminderDbPath)
       .catch(() => {});
   }, []);
 
@@ -427,7 +531,9 @@ export default function App() {
                   dirty: false,
                 },
               ]
-            : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
+            : activity === "reminder"
+              ? [{ id: OTHER_TAB_ID, title: "日历", dirty: false }]
+              : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
 
   const editorActiveId = activity === "blog" ? blogActiveId : otherActiveId;
 
@@ -449,9 +555,13 @@ export default function App() {
           void GetJsonFormatterWorkDir()
             .then(setJsonFormatterWorkDir)
             .catch(() => {});
+          void GetReminderDBPath()
+            .then(setReminderDbPath)
+            .catch(() => {});
           void refreshBlogFromDisk();
           void loadWorkHour();
           void reloadJsonFormatterDraft();
+          void reloadReminders();
         }}
       />
       <div className="flex min-h-0 flex-1 flex-col">
@@ -486,6 +596,12 @@ export default function App() {
               setPrPage(p);
               setPrSelected(null);
             }}
+            customReminders={customReminders}
+            selectedReminderId={selectedReminderId}
+            onReminderSelect={setSelectedReminderId}
+            onReminderAdd={handleReminderAdd}
+            onReminderUpdate={handleReminderUpdate}
+            onReminderDelete={handleReminderDelete}
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <EditorGroup
@@ -511,18 +627,23 @@ export default function App() {
               pullRequestView={activity === "pullRequest"}
               pullRequestPreviewUrl={prSelected?.url ?? null}
               pullRequestBreadcrumbLabel={pullRequestBreadcrumb}
+              reminderView={activity === "reminder"}
+              customReminders={customReminders}
             />
-            <BottomPanel
-              height={panelHeight}
-              visible={panelVisible}
-              onResizeStart={onPanelResizeStart}
-              onToggle={() => setPanelVisible((v) => !v)}
-            />
+            {activity !== "reminder" ? (
+              <BottomPanel
+                height={panelHeight}
+                visible={panelVisible}
+                onResizeStart={onPanelResizeStart}
+                onToggle={() => setPanelVisible((v) => !v)}
+              />
+            ) : null}
           </div>
         </div>
         <StatusBar
           blogWorkDir={blogWorkDir}
           jsonFormatterWorkDir={jsonFormatterWorkDir}
+          reminderDbPath={reminderDbPath}
         />
       </div>
     </div>

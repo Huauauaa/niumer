@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import type { CustomReminder } from "../types/reminder";
 import type { AttendanceRecord } from "../types/workhour";
+import { HolidayReminderView } from "./HolidayReminderView";
 import { JsonFormatterView } from "./JsonFormatterView";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { WorkHourView } from "./WorkHourView";
@@ -32,6 +34,10 @@ type Props = {
   pullRequestView?: boolean;
   pullRequestPreviewUrl?: string | null;
   pullRequestBreadcrumbLabel?: string;
+  /** 节假日提醒 */
+  reminderView?: boolean;
+  /** 侧栏「我的提醒」全部条目（主区「我的倒计时」一并展示） */
+  customReminders?: CustomReminder[];
 };
 
 const sampleLines = [
@@ -71,6 +77,8 @@ export function EditorGroup({
   pullRequestView = false,
   pullRequestPreviewUrl = null,
   pullRequestBreadcrumbLabel,
+  reminderView = false,
+  customReminders = [],
 }: Props) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -94,11 +102,20 @@ export function EditorGroup({
 
   const showBlogEmpty = blogEditor && tabs.length === 0;
 
+  const shellClass =
+    "flex min-h-0 min-w-0 flex-1 flex-col" as const;
+  const shellStyle = { background: "var(--vscode-editor-bg)" } as const;
+
+  if (reminderView) {
+    return (
+      <div className={shellClass} style={shellStyle}>
+        <HolidayReminderView customReminders={customReminders} />
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="flex min-h-0 min-w-0 flex-1 flex-col"
-      style={{ background: "var(--vscode-editor-bg)" }}
-    >
+    <div className={shellClass} style={shellStyle}>
       <div
         className="flex h-9 shrink-0 items-end gap-px overflow-x-auto border-b border-[var(--vscode-border)] bg-[#252526]"
         role="tablist"

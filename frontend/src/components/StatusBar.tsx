@@ -4,12 +4,15 @@ type Props = {
   blogWorkDir?: string;
   /** JSON formatter draft directory (draft.json). */
   jsonFormatterWorkDir?: string;
+  /** Custom reminders SQLite file path. */
+  reminderDbPath?: string;
 };
 
 export function StatusBar({
   branch = "main",
   blogWorkDir,
   jsonFormatterWorkDir,
+  reminderDbPath,
 }: Props) {
   return (
     <footer
@@ -39,6 +42,14 @@ export function StatusBar({
             title={jsonFormatterWorkDir}
           >
             JSON: {jsonFormatterWorkDir}
+          </span>
+        ) : null}
+        {reminderDbPath ? (
+          <span
+            className="allow-select min-w-0 truncate font-mono text-[11px] opacity-90"
+            title={reminderDbPath}
+          >
+            Reminder: {reminderDbPath}
           </span>
         ) : null}
         <span className="hidden shrink-0 opacity-80 sm:inline">
