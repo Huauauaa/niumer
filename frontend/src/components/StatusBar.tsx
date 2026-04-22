@@ -11,7 +11,10 @@ export function StatusBar({ branch = "main", blogWorkDir }: Props) {
       style={{ background: "var(--vscode-statusBar-bg)" }}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <button type="button" className="flex shrink-0 items-center gap-1 hover:underline">
+        <button
+          type="button"
+          className="flex shrink-0 items-center gap-1 hover:underline"
+        >
           <span aria-hidden>⎇</span>
           <span>{branch}</span>
         </button>
@@ -24,7 +27,9 @@ export function StatusBar({ branch = "main", blogWorkDir }: Props) {
             Blog: {blogWorkDir}
           </span>
         ) : null}
-        <span className="hidden shrink-0 opacity-80 sm:inline">0 errors, 0 warnings</span>
+        <span className="hidden shrink-0 opacity-80 sm:inline">
+          0 errors, 0 warnings
+        </span>
       </div>
       <div className="flex items-center gap-3">
         <span className="opacity-90">Ln 1, Col 1</span>

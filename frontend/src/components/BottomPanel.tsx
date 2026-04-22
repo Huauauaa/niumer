@@ -9,7 +9,12 @@ type Props = {
   onToggle: () => void;
 };
 
-export function BottomPanel({ height, visible, onResizeStart, onToggle }: Props) {
+export function BottomPanel({
+  height,
+  visible,
+  onResizeStart,
+  onToggle,
+}: Props) {
   const [tab, setTab] = useState<PanelTab>("terminal");
 
   if (!visible) {
@@ -50,7 +55,9 @@ export function BottomPanel({ height, visible, onResizeStart, onToggle }: Props)
             key={t.id}
             type="button"
             className={`rounded px-2 py-1 ${
-              tab === t.id ? "border-b-2 border-[#007fd4] text-white" : "text-[#969696] hover:text-white"
+              tab === t.id
+                ? "border-b-2 border-[#007fd4] text-white"
+                : "text-[#969696] hover:text-white"
             }`}
             onClick={() => setTab(t.id)}
           >
@@ -73,9 +80,13 @@ export function BottomPanel({ height, visible, onResizeStart, onToggle }: Props)
         {tab === "terminal" && (
           <div>
             <div className="text-[#6a9955]">$ npm run build</div>
-            <div className="text-[#d4d4d4]">&gt; niumer-frontend@0.0.0 build</div>
+            <div className="text-[#d4d4d4]">
+              &gt; niumer-frontend@0.0.0 build
+            </div>
             <div className="text-[#d4d4d4]">&gt; vite build</div>
-            <div className="text-[#569cd6]">vite v5.x building for production...</div>
+            <div className="text-[#569cd6]">
+              vite v5.x building for production...
+            </div>
             <div className="text-[#6a9955]">✓ built in 420ms</div>
             <div className="mt-2 flex items-center gap-1">
               <span className="text-[#cccccc]">$</span>
@@ -83,8 +94,12 @@ export function BottomPanel({ height, visible, onResizeStart, onToggle }: Props)
             </div>
           </div>
         )}
-        {tab === "problems" && <div className="text-[#858585]">No problems have been detected.</div>}
-        {tab === "output" && <div className="text-[#858585]">Output channel is empty.</div>}
+        {tab === "problems" && (
+          <div className="text-[#858585]">No problems have been detected.</div>
+        )}
+        {tab === "output" && (
+          <div className="text-[#858585]">Output channel is empty.</div>
+        )}
       </div>
     </div>
   );

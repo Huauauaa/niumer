@@ -32,8 +32,8 @@ const sampleLines = [
   "  const [open, setOpen] = useState(true);",
   "  return (",
   '    <section className="p-4">',
-  "      <h1 className=\"text-lg\">Welcome to niumer</h1>",
-  "      <p className=\"text-sm text-[#858585]\">",
+  '      <h1 className="text-lg">Welcome to niumer</h1>',
+  '      <p className="text-sm text-[#858585]">',
   "        Layout mirrors VS Code: activity bar, sidebar, panel, status bar.",
   "      </p>",
   "    </section>",
@@ -80,7 +80,10 @@ export function EditorGroup({
   const showBlogEmpty = blogEditor && tabs.length === 0;
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col" style={{ background: "var(--vscode-editor-bg)" }}>
+    <div
+      className="flex min-h-0 min-w-0 flex-1 flex-col"
+      style={{ background: "var(--vscode-editor-bg)" }}
+    >
       <div
         className="flex h-9 shrink-0 items-end gap-px overflow-x-auto border-b border-[var(--vscode-border)] bg-[#252526]"
         role="tablist"
@@ -92,7 +95,7 @@ export function EditorGroup({
               key={tab.id}
               role="tab"
               aria-selected={isActive}
-              className={`group flex h-9 max-w-[200px] min-w-0 shrink-0 items-center gap-1 border-r border-[var(--vscode-border)] px-2 text-[13px] ${
+              className={`group flex h-9 min-w-0 max-w-[200px] shrink-0 items-center gap-1 border-r border-[var(--vscode-border)] px-2 text-[13px] ${
                 isActive
                   ? "border-t-2 border-t-[#007fd4] bg-[var(--vscode-editor-bg)] text-[#ffffff]"
                   : "cursor-pointer bg-[var(--vscode-tab-inactive)] text-[#969696] hover:bg-[#2a2d2e]"
@@ -124,7 +127,10 @@ export function EditorGroup({
           <span className="min-w-0 flex-1 truncate">
             {blogEditor ? (
               <>
-                blog › <span className="text-[#e37933]">{breadcrumbLabel ?? active?.title ?? "untitled"}</span>
+                blog ›{" "}
+                <span className="text-[#e37933]">
+                  {breadcrumbLabel ?? active?.title ?? "untitled"}
+                </span>
               </>
             ) : workHourView ? (
               <>
@@ -132,7 +138,10 @@ export function EditorGroup({
               </>
             ) : (
               <>
-                niumer › <span className="text-[#e37933]">{active?.title ?? "Home"}</span>
+                niumer ›{" "}
+                <span className="text-[#e37933]">
+                  {active?.title ?? "Home"}
+                </span>
               </>
             )}
           </span>
@@ -140,7 +149,9 @@ export function EditorGroup({
             <button
               type="button"
               className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-[#cccccc] opacity-90 hover:bg-white/10 hover:opacity-100"
-              title={blogPreviewOpen ? "隐藏 Markdown 预览" : "打开 Markdown 预览"}
+              title={
+                blogPreviewOpen ? "隐藏 Markdown 预览" : "打开 Markdown 预览"
+              }
               onClick={() => setBlogPreviewOpen((v) => !v)}
             >
               {blogPreviewOpen ? "隐藏预览" : "打开预览"}
@@ -157,14 +168,15 @@ export function EditorGroup({
           />
         ) : showBlogEmpty ? (
           <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[#858585]">
-            No open document. Create a new file or open one from the Blog explorer.
+            No open document. Create a new file or open one from the Blog
+            explorer.
           </div>
         ) : blogEditor ? (
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="allow-select flex min-h-0 min-w-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">
               <div
                 ref={gutterRef}
-                className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pr-3 pl-3 text-right text-[#858585]"
+                className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pl-3 pr-3 text-right text-[#858585]"
               >
                 {Array.from({ length: lineCount }, (_, i) => (
                   <div key={i}>{i + 1}</div>
@@ -177,21 +189,25 @@ export function EditorGroup({
                 value={editorContent}
                 onChange={(e) => onEditorContentChange(e.target.value)}
                 onScroll={(e) => {
-                  if (gutterRef.current) gutterRef.current.scrollTop = e.currentTarget.scrollTop;
+                  if (gutterRef.current)
+                    gutterRef.current.scrollTop = e.currentTarget.scrollTop;
                 }}
                 placeholder="Start typing…"
               />
             </div>
             {blogPreviewOpen ? (
               <>
-                <div className="w-px shrink-0 bg-[var(--vscode-border)]" aria-hidden />
+                <div
+                  className="w-px shrink-0 bg-[var(--vscode-border)]"
+                  aria-hidden
+                />
                 <MarkdownPreview markdown={editorContent} />
               </>
             ) : null}
           </div>
         ) : (
           <div className="allow-select flex min-h-0 flex-1 overflow-auto font-mono text-[13px] leading-6">
-            <div className="sticky left-0 shrink-0 select-none border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pr-3 pl-4 text-right text-[#858585]">
+            <div className="sticky left-0 shrink-0 select-none border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pl-4 pr-3 text-right text-[#858585]">
               {sampleLines.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}

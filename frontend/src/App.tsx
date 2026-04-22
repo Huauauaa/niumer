@@ -48,7 +48,9 @@ export default function App() {
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [blogWorkDir, setBlogWorkDir] = useState("");
 
-  const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>([]);
+  const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>(
+    [],
+  );
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
 
@@ -165,7 +167,9 @@ export default function App() {
   }, []);
 
   const openBlogDoc = useCallback((fileName: string) => {
-    setBlogOpenTabs((prev) => (prev.includes(fileName) ? prev : [...prev, fileName]));
+    setBlogOpenTabs((prev) =>
+      prev.includes(fileName) ? prev : [...prev, fileName],
+    );
     setBlogActiveId(fileName);
   }, []);
 
@@ -177,7 +181,12 @@ export default function App() {
       const fileName = nextUntitledFileName([...names]);
       await WriteBlogFile(fileName, "");
       setBlogDocs((p) => {
-        const row: BlogDocument = { fileName, title: fileName, content: "", dirty: false };
+        const row: BlogDocument = {
+          fileName,
+          title: fileName,
+          content: "",
+          dirty: false,
+        };
         const next = [...p.filter((d) => d.fileName !== fileName), row];
         return next.sort((a, b) => a.fileName.localeCompare(b.fileName));
       });
@@ -188,55 +197,59 @@ export default function App() {
     }
   }, []);
 
-  const renameBlogDoc = useCallback(async (oldName: string, newName: string) => {
-    if (!newName || newName === oldName) return;
-    const exists = blogDocsRef.current.some(
-      (d) => d.fileName !== oldName && d.fileName.toLowerCase() === newName.toLowerCase(),
-    );
-    if (exists) {
-      window.alert("A file with that name already exists.");
-      return;
-    }
-    try {
-      await RenameBlogFile(oldName, newName);
-    } catch (e) {
-      window.alert(e instanceof Error ? e.message : String(e));
-      return;
-    }
-    setBlogDocs((prev) => {
-      const next = prev.map((d) =>
-        d.fileName === oldName ? { ...d, fileName: newName, title: newName, dirty: false } : d,
+  const renameBlogDoc = useCallback(
+    async (oldName: string, newName: string) => {
+      if (!newName || newName === oldName) return;
+      const exists = blogDocsRef.current.some(
+        (d) =>
+          d.fileName !== oldName &&
+          d.fileName.toLowerCase() === newName.toLowerCase(),
       );
-      return next.sort((a, b) => a.fileName.localeCompare(b.fileName));
-    });
-    setBlogOpenTabs((tabs) => tabs.map((t) => (t === oldName ? newName : t)));
-    setBlogActiveId((active) => (active === oldName ? newName : active));
-  }, []);
-
-  const deleteBlogDoc = useCallback(
-    async (fileName: string) => {
-      const doc = blogDocsRef.current.find((d) => d.fileName === fileName);
-      if (!doc) return;
-      if (!window.confirm(`Delete "${doc.title}"?`)) return;
+      if (exists) {
+        window.alert("A file with that name already exists.");
+        return;
+      }
       try {
-        await DeleteBlogFile(fileName);
+        await RenameBlogFile(oldName, newName);
       } catch (e) {
         window.alert(e instanceof Error ? e.message : String(e));
         return;
       }
-      setBlogDocs((prev) => prev.filter((d) => d.fileName !== fileName));
-      setBlogOpenTabs((prev) => {
-        const next = prev.filter((t) => t !== fileName);
-        setBlogActiveId((active) => {
-          if (active !== fileName) return active;
-          const idx = prev.indexOf(fileName);
-          return next[Math.max(0, idx - 1)] ?? next[0] ?? "";
-        });
-        return next;
+      setBlogDocs((prev) => {
+        const next = prev.map((d) =>
+          d.fileName === oldName
+            ? { ...d, fileName: newName, title: newName, dirty: false }
+            : d,
+        );
+        return next.sort((a, b) => a.fileName.localeCompare(b.fileName));
       });
+      setBlogOpenTabs((tabs) => tabs.map((t) => (t === oldName ? newName : t)));
+      setBlogActiveId((active) => (active === oldName ? newName : active));
     },
     [],
   );
+
+  const deleteBlogDoc = useCallback(async (fileName: string) => {
+    const doc = blogDocsRef.current.find((d) => d.fileName === fileName);
+    if (!doc) return;
+    if (!window.confirm(`Delete "${doc.title}"?`)) return;
+    try {
+      await DeleteBlogFile(fileName);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : String(e));
+      return;
+    }
+    setBlogDocs((prev) => prev.filter((d) => d.fileName !== fileName));
+    setBlogOpenTabs((prev) => {
+      const next = prev.filter((t) => t !== fileName);
+      setBlogActiveId((active) => {
+        if (active !== fileName) return active;
+        const idx = prev.indexOf(fileName);
+        return next[Math.max(0, idx - 1)] ?? next[0] ?? "";
+      });
+      return next;
+    });
+  }, []);
 
   const saveActiveBlog = useCallback(async () => {
     const id = blogActiveId;
@@ -246,7 +259,9 @@ export default function App() {
     try {
       await WriteBlogFile(doc.fileName, doc.content);
       setBlogDocs((prev) =>
-        prev.map((d) => (d.fileName === doc.fileName ? { ...d, dirty: false } : d)),
+        prev.map((d) =>
+          d.fileName === doc.fileName ? { ...d, dirty: false } : d,
+        ),
       );
     } catch (e) {
       window.alert(e instanceof Error ? e.message : String(e));
@@ -258,7 +273,9 @@ export default function App() {
       if (!blogActiveId) return;
       setBlogDocs((prev) =>
         prev.map((d) =>
-          d.fileName === blogActiveId ? { ...d, content: value, dirty: true } : d,
+          d.fileName === blogActiveId
+            ? { ...d, content: value, dirty: true }
+            : d,
         ),
       );
     },
@@ -350,7 +367,10 @@ export default function App() {
             onBlogRename={renameBlogDoc}
             workHourTotalEffectiveHours={
               activity === "workhour"
-                ? workHourRecords.reduce((s, r) => s + (Number(r.effectiveWorkHours) || 0), 0)
+                ? workHourRecords.reduce(
+                    (s, r) => s + (Number(r.effectiveWorkHours) || 0),
+                    0,
+                  )
                 : undefined
             }
           />
@@ -361,7 +381,9 @@ export default function App() {
               onSelect={setEditorActiveId}
               onClose={handleEditorClose}
               blogEditor={activity === "blog"}
-              editorContent={activity === "blog" ? (activeBlogDoc?.content ?? "") : ""}
+              editorContent={
+                activity === "blog" ? (activeBlogDoc?.content ?? "") : ""
+              }
               onEditorContentChange={updateBlogContent}
               onSaveBlog={activity === "blog" ? saveActiveBlog : undefined}
               breadcrumbLabel={activeBlogDoc?.title}

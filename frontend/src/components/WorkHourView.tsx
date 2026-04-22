@@ -44,7 +44,9 @@ export function WorkHourView({ records, loading, error, onRefresh }: Props) {
         </button>
       </div>
       {error ? (
-        <div className="allow-select px-4 py-3 text-[13px] text-[#f48771]">{error}</div>
+        <div className="allow-select px-4 py-3 text-[13px] text-[#f48771]">
+          {error}
+        </div>
       ) : null}
       <div className="allow-select min-h-0 flex-1 overflow-auto">
         <table className="w-max min-w-full border-collapse text-left text-[12px]">
@@ -63,9 +65,15 @@ export function WorkHourView({ records, loading, error, onRefresh }: Props) {
           <tbody className="text-[#d4d4d4]">
             {records.length === 0 && !loading ? (
               <tr>
-                <td colSpan={COLUMNS.length} className="px-4 py-6 text-[#858585]">
-                  暂无记录。点击「刷新」由 Go 无头浏览器登录页取 Cookie 并拉取接口（需本机 Chrome/Chromium，见 README）。也可将已有{" "}
-                  <code className="rounded bg-[#2d2d2d] px-1 py-0.5 font-mono text-[11px]">work_hour.db</code>{" "}
+                <td
+                  colSpan={COLUMNS.length}
+                  className="px-4 py-6 text-[#858585]"
+                >
+                  暂无记录。点击「刷新」由 Go 无头浏览器登录页取 Cookie
+                  并拉取接口（需本机 Chrome/Chromium，见 README）。也可将已有{" "}
+                  <code className="rounded bg-[#2d2d2d] px-1 py-0.5 font-mono text-[11px]">
+                    work_hour.db
+                  </code>{" "}
                   放到 Preference 配置的路径后仅浏览。
                 </td>
               </tr>

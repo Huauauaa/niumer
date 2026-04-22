@@ -87,7 +87,9 @@ function BlogExplorer({
       }}
     >
       <div className="flex shrink-0 items-center justify-between px-2 py-2">
-        <span className="pl-1 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">Explorer</span>
+        <span className="pl-1 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+          Explorer
+        </span>
         <div className="flex items-center gap-0.5">
           <button
             type="button"
@@ -96,17 +98,27 @@ function BlogExplorer({
             className="rounded p-1 text-[#cccccc] hover:bg-white/10"
             onClick={onNew}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden
+            >
               <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
             </svg>
           </button>
         </div>
       </div>
-      <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-[#858585]">Blog</div>
+      <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-[#858585]">
+        Blog
+      </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         <ul className="flex flex-col gap-px">
           {documents.length === 0 ? (
-            <li className="px-2 py-2 text-[12px] text-[#858585]">No files yet. Click New File.</li>
+            <li className="px-2 py-2 text-[12px] text-[#858585]">
+              No files yet. Click New File.
+            </li>
           ) : (
             documents.map((doc) => {
               const isSel = doc.fileName === selectedId;
@@ -130,7 +142,10 @@ function BlogExplorer({
                       M
                     </span>
                     {isEditing ? (
-                      <div className="flex min-w-0 flex-1 items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex min-w-0 flex-1 items-center gap-0.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <input
                           ref={inputRef}
                           type="text"
@@ -169,7 +184,9 @@ function BlogExplorer({
                         {doc.title}
                       </span>
                     )}
-                    {!isEditing && doc.dirty && <span className="shrink-0 text-[#e37933]">●</span>}
+                    {!isEditing && doc.dirty && (
+                      <span className="shrink-0 text-[#e37933]">●</span>
+                    )}
                     {!isEditing && (
                       <>
                         <button
@@ -204,7 +221,13 @@ function BlogExplorer({
                             onDelete(doc.fileName);
                           }}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-[#858585] hover:text-[#cccccc]">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="text-[#858585] hover:text-[#cccccc]"
+                          >
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                           </svg>
                         </button>
@@ -247,7 +270,9 @@ function SidebarBody({
   if (activity === "tool") {
     return (
       <div className="flex flex-col">
-        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">Tool</div>
+        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+          Tool
+        </div>
         <div className="flex flex-col gap-0.5 px-1 pb-2">
           <button type="button" className={rowClass}>
             <span className="font-mono text-[12px] text-[#b5cea8]">$</span>
@@ -292,10 +317,14 @@ function SidebarBody({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">Workhour</div>
+      <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+        Workhour
+      </div>
       <div className="allow-select min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 text-[13px] text-[#cccccc]">
         <div>
-          <div className="mb-1 text-[11px] uppercase text-[#858585]">总工时</div>
+          <div className="mb-1 text-[11px] uppercase text-[#858585]">
+            总工时
+          </div>
           <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
             {workHourTotalEffectiveHours === undefined
               ? "—"
@@ -303,7 +332,9 @@ function SidebarBody({
           </div>
         </div>
         <div>
-          <div className="mb-1.5 text-[11px] uppercase text-[#858585]">作息</div>
+          <div className="mb-1.5 text-[11px] uppercase text-[#858585]">
+            作息
+          </div>
           <ul className="space-y-1 font-mono text-[12px] leading-snug text-[#858585]">
             <li>08:00 – 12:00</li>
             <li>13:30 – 17:30</li>

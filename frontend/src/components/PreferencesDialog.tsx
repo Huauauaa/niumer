@@ -113,16 +113,23 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
         aria-labelledby="prefs-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h2 id="prefs-title" className="mb-3 text-[13px] font-semibold text-[#cccccc]">
+        <h2
+          id="prefs-title"
+          className="mb-3 text-[13px] font-semibold text-[#cccccc]"
+        >
           Preference
         </h2>
 
         <section className="mb-5">
           <p className="mb-2 text-[12px] text-[#858585]">
             Blog working directory. Default:{" "}
-            <span className="allow-select font-mono text-[#b5cea8]">{defaultBlogPath || "—"}</span>
+            <span className="allow-select font-mono text-[#b5cea8]">
+              {defaultBlogPath || "—"}
+            </span>
           </p>
-          <label className="mb-1 block text-[11px] uppercase text-[#858585]">Directory</label>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">
+            Directory
+          </label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -144,11 +151,15 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
         <section className="mb-2">
           <p className="mb-2 text-[12px] text-[#858585]">
             Work hour SQLite file path. Default:{" "}
-            <span className="allow-select font-mono text-[#b5cea8]">{defaultWorkHourPath || "—"}</span>
+            <span className="allow-select font-mono text-[#b5cea8]">
+              {defaultWorkHourPath || "—"}
+            </span>
             {" · "}
             Clear the field and save to use the default path.
           </p>
-          <label className="mb-1 block text-[11px] uppercase text-[#858585]">SQLite file</label>
+          <label className="mb-1 block text-[11px] uppercase text-[#858585]">
+            SQLite file
+          </label>
           <div className="flex gap-2">
             <input
               type="text"

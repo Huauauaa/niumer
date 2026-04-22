@@ -10,7 +10,9 @@ export function MarkdownPreview({ markdown }: Props) {
   return (
     <div className="vscode-markdown-preview allow-select min-h-0 min-w-0 flex-1 overflow-auto">
       <div className="vscode-markdown-body">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown || "\u00a0"}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {markdown || "\u00a0"}
+        </ReactMarkdown>
       </div>
     </div>
   );

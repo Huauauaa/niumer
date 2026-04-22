@@ -46,7 +46,9 @@ body {
   margin: 0 auto;
   padding: 12px 26px 48px;
   color: #cccccc;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui,
+    "Ubuntu", "Droid Sans", sans-serif;
   font-size: 14px;
   line-height: 1.6;
   word-wrap: break-word;
@@ -143,7 +145,9 @@ body {
 
 .vscode-markdown-body code {
   padding: 0.15em 0.35em;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
   font-size: 0.92em;
   color: #ce9178;
   background: rgba(255, 255, 255, 0.06);
