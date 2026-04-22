@@ -1,5 +1,6 @@
 // Work-hour API mock: same routes and JSON shapes as the placeholder
 // http://127.0.0.1:17890/id, /hr-id, /work-hour (defaults in workhour_fetch.go).
+// Also: GET /pull-request (paginated PR list), GET /pr-preview/{id} (HTML for iframe).
 //
 // Run from repo root:
 //
@@ -15,6 +16,8 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"strconv"
@@ -36,9 +39,25 @@ func main() {
 	mux.HandleFunc("POST /id", handleTenant)
 	mux.HandleFunc("POST /hr-id", handleHrID)
 	mux.HandleFunc("POST /work-hour", handleWorkHour)
+	mux.HandleFunc("GET /pull-request", handlePullRequestList)
+	mux.HandleFunc("GET /pr-preview/{id}", handlePRPreview)
 
 	log.Printf("mockserver listening on http://%s", *addr)
-	log.Fatal(http.ListenAndServe(*addr, logRequests(mux)))
+	log.Fatal(http.ListenAndServe(*addr, withCORS(logRequests(mux))))
+}
+
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("Access-Control-Allow-Origin", "*")
+		h.Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		h.Set("Access-Control-Allow-Headers", "Content-Type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // loginHTML is picked so chromedp.WaitVisible succeeds in headless Chrome (non-zero
@@ -168,4 +187,128 @@ func jsonNumberToInt64(v any) int64 {
 	default:
 		return 0
 	}
+}
+
+const pullRequestMockTotal = 47
+
+func requestBaseURL(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
+}
+
+func prState(n int) string {
+	switch n % 3 {
+	case 0:
+		return "open"
+	case 1:
+		return "merged"
+	default:
+		return "closed"
+	}
+}
+
+func pullRequestItemMap(n int, base string) map[string]any {
+	target := "main"
+	if n%4 == 0 {
+		target = "develop"
+	}
+	now := time.Now().UTC().Format(time.RFC3339)
+	return map[string]any{
+		"id":             n,
+		"number":         n,
+		"url":            fmt.Sprintf("%s/pr-preview/%d", strings.TrimSuffix(base, "/"), n),
+		"title":          fmt.Sprintf("feat: mock pull request #%d (%s)", n, prState(n)),
+		"author":         fmt.Sprintf("dev%d", (n%9)+1),
+		"sourceBranch":   fmt.Sprintf("feature/pr-%d", n),
+		"targetBranch":   target,
+		"state":          prState(n),
+		"createdAt":      now,
+		"updatedAt":      now,
+	}
+}
+
+func handlePullRequestList(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	page, _ := strconv.Atoi(q.Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize, _ := strconv.Atoi(q.Get("page_size"))
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 50 {
+		pageSize = 50
+	}
+	base := requestBaseURL(r)
+	total := pullRequestMockTotal
+	totalPages := (total + pageSize - 1) / pageSize
+	if totalPages < 1 {
+		totalPages = 1
+	}
+	start := (page - 1) * pageSize
+	if start >= total {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"items":       []any{},
+			"total":       total,
+			"page":        page,
+			"pageSize":    pageSize,
+			"totalPages":  totalPages,
+		})
+		return
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	items := make([]map[string]any, 0, end-start)
+	for i := start; i < end; i++ {
+		items = append(items, pullRequestItemMap(i+1, base))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"items":       items,
+		"total":       total,
+		"page":        page,
+		"pageSize":    pageSize,
+		"totalPages":  totalPages,
+	})
+}
+
+func handlePRPreview(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	n, err := strconv.Atoi(idStr)
+	if err != nil || n < 1 || n > pullRequestMockTotal {
+		http.NotFound(w, r)
+		return
+	}
+	base := requestBaseURL(r)
+	m := pullRequestItemMap(n, base)
+	title, _ := m["title"].(string)
+	author, _ := m["author"].(string)
+	src, _ := m["sourceBranch"].(string)
+	tgt, _ := m["targetBranch"].(string)
+	st, _ := m["state"].(string)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>PR #%d</title>
+<style>body{font-family:system-ui,sans-serif;background:#1e1e1e;color:#ccc;padding:1.5rem;line-height:1.5;}
+code{color:#ce9178}a{color:#4fc1ff}</style></head><body>
+<h1 style="font-size:1.1rem;margin:0 0 0.5rem">Pull request #%d</h1>
+<p style="color:#858585;margin:0 0 1rem">Mock preview from <code>%s</code></p>
+<dl style="margin:0;display:grid;grid-template-columns:10rem 1fr;gap:0.35rem 1rem;font-size:14px">
+<dt>Title</dt><dd>%s</dd>
+<dt>Author</dt><dd>%s</dd>
+<dt>Branches</dt><dd><code>%s</code> → <code>%s</code></dd>
+<dt>State</dt><dd>%s</dd>
+</dl>
+<p style="margin-top:1.5rem"><a href="%s">Open this URL</a> in a full browser if the embedded view is limited.</p>
+</body></html>`,
+		n, n, html.EscapeString(r.URL.Path),
+		html.EscapeString(title), html.EscapeString(author),
+		html.EscapeString(src), html.EscapeString(tgt), html.EscapeString(st),
+		html.EscapeString(fmt.Sprint(m["url"])),
+	)
 }

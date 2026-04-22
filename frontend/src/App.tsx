@@ -25,8 +25,11 @@ import {
   WriteJsonFormatterDraft,
 } from "../wailsjs/go/main/App";
 import type { AttendanceRecord } from "./types/workhour";
+import type { PullRequestListItem } from "./types/pullRequest";
+import { fetchPullRequests } from "./api/pullRequest";
 
 const OTHER_TAB_ID = "_home";
+const PR_LIST_PAGE_SIZE = 10;
 
 const JSON_FORMATTER_INITIAL = `{
   "content": "hi, niumer"
@@ -65,6 +68,15 @@ export default function App() {
   );
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
+
+  const [prPage, setPrPage] = useState(1);
+  const [prTotalPages, setPrTotalPages] = useState(1);
+  const [prItems, setPrItems] = useState<PullRequestListItem[]>([]);
+  const [prLoading, setPrLoading] = useState(false);
+  const [prError, setPrError] = useState<string | null>(null);
+  const [prSelected, setPrSelected] = useState<PullRequestListItem | null>(
+    null,
+  );
 
   const dragRef = useRef<"sidebar" | "panel" | null>(null);
 
@@ -168,6 +180,34 @@ export default function App() {
     if (activity !== "workhour") return;
     void loadWorkHour();
   }, [activity, loadWorkHour]);
+
+  useEffect(() => {
+    if (activity !== "pullRequest") return;
+    let alive = true;
+    setPrLoading(true);
+    setPrError(null);
+    void fetchPullRequests(prPage, PR_LIST_PAGE_SIZE)
+      .then((res) => {
+        if (!alive) return;
+        setPrItems(res.items);
+        setPrTotalPages(Math.max(1, res.totalPages));
+        setPrSelected((cur) => {
+          if (!cur) return null;
+          return res.items.find((x) => x.number === cur.number) ?? null;
+        });
+      })
+      .catch((e) => {
+        if (!alive) return;
+        setPrError(e instanceof Error ? e.message : String(e));
+        setPrItems([]);
+      })
+      .finally(() => {
+        if (alive) setPrLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [activity, prPage]);
 
   useEffect(() => {
     void refreshBlogFromDisk();
@@ -355,6 +395,15 @@ export default function App() {
 
   const activeBlogDoc = blogDocs.find((d) => d.fileName === blogActiveId);
 
+  const pullRequestBreadcrumb = useMemo(() => {
+    if (!prSelected) return undefined;
+    const t =
+      prSelected.title.length > 52
+        ? `${prSelected.title.slice(0, 49)}…`
+        : prSelected.title;
+    return `#${prSelected.number} — ${t}`;
+  }, [prSelected]);
+
   const handleEditorClose = (id: string) => {
     if (activity === "blog") {
       closeBlogTab(id);
@@ -370,7 +419,15 @@ export default function App() {
         ? [{ id: OTHER_TAB_ID, title: "Workhour", dirty: false }]
         : activity === "tool"
           ? [{ id: OTHER_TAB_ID, title: "JSON formatter", dirty: false }]
-          : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
+          : activity === "pullRequest"
+            ? [
+                {
+                  id: OTHER_TAB_ID,
+                  title: prSelected ? `#${prSelected.number}` : "PR preview",
+                  dirty: false,
+                },
+              ]
+            : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
 
   const editorActiveId = activity === "blog" ? blogActiveId : otherActiveId;
 
@@ -418,6 +475,17 @@ export default function App() {
                   )
                 : undefined
             }
+            pullRequestItems={activity === "pullRequest" ? prItems : undefined}
+            pullRequestPage={prPage}
+            pullRequestTotalPages={prTotalPages}
+            pullRequestLoading={prLoading}
+            pullRequestError={prError}
+            pullRequestSelectedNumber={prSelected?.number ?? null}
+            onPullRequestSelect={(item) => setPrSelected(item)}
+            onPullRequestPageChange={(p) => {
+              setPrPage(p);
+              setPrSelected(null);
+            }}
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <EditorGroup
@@ -440,6 +508,9 @@ export default function App() {
               jsonFormatterView={activity === "tool"}
               jsonFormatterContent={jsonFormatterText}
               onJsonFormatterContentChange={setJsonFormatterText}
+              pullRequestView={activity === "pullRequest"}
+              pullRequestPreviewUrl={prSelected?.url ?? null}
+              pullRequestBreadcrumbLabel={pullRequestBreadcrumb}
             />
             <BottomPanel
               height={panelHeight}

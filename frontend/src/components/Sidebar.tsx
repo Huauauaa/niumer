@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { normalizeMarkdownFileName, type BlogDocument } from "../types/blog";
 import type { ActivityId } from "./ActivityBar";
+import type {
+  PullRequestListItem,
+  PullRequestState,
+} from "../types/pullRequest";
 
 type Props = {
   activity: ActivityId;
@@ -15,11 +19,26 @@ type Props = {
   onBlogRename: (oldName: string, newName: string) => void | Promise<void>;
   /** 各条记录 effectiveWorkHours 之和（小时） */
   workHourTotalEffectiveHours?: number;
+  /** Pull Request list (activity === pullRequest); from mockserver GET /pull-request */
+  pullRequestItems?: PullRequestListItem[];
+  pullRequestPage?: number;
+  pullRequestTotalPages?: number;
+  pullRequestLoading?: boolean;
+  pullRequestError?: string | null;
+  pullRequestSelectedNumber?: number | null;
+  onPullRequestSelect?: (item: PullRequestListItem) => void;
+  onPullRequestPageChange?: (page: number) => void;
 };
 
 const rowClass =
   "group flex w-full cursor-pointer items-center gap-1 rounded px-2 py-1 text-left text-[13px] text-[#cccccc] hover:bg-[var(--vscode-list-hover)]";
 const selectedRow = "bg-[#37373d] hover:bg-[#37373d]";
+
+function prStateDotClass(state: PullRequestState): string {
+  if (state === "merged") return "text-[#6a9955]";
+  if (state === "open") return "text-[#4fc1ff]";
+  return "text-[#858585]";
+}
 
 function BlogExplorer({
   documents,
@@ -253,6 +272,14 @@ function SidebarBody({
   onBlogDelete,
   onBlogRename,
   workHourTotalEffectiveHours,
+  pullRequestItems = [],
+  pullRequestPage = 1,
+  pullRequestTotalPages = 1,
+  pullRequestLoading = false,
+  pullRequestError = null,
+  pullRequestSelectedNumber = null,
+  onPullRequestSelect,
+  onPullRequestPageChange,
 }: Omit<Props, "width" | "onResizeStart">) {
   if (activity === "blog") {
     return (
@@ -285,23 +312,88 @@ function SidebarBody({
 
   if (activity === "pullRequest") {
     return (
-      <div className="flex flex-col">
-        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
           Pull Request
         </div>
-        <div className="flex flex-col gap-0.5 px-1 pb-2">
-          <button type="button" className={rowClass}>
-            <span className="text-[#6a9955]">●</span>
-            <span className="truncate">#42 feat: sidebar activities</span>
-          </button>
-          <button type="button" className={rowClass}>
-            <span className="text-[#cca700]">●</span>
-            <span className="truncate">#41 fix: build on CI</span>
-          </button>
-          <button type="button" className={rowClass}>
-            <span className="text-[#858585]">○</span>
-            <span className="truncate text-[#858585]">#40 docs: README</span>
-          </button>
+        <div className="allow-select min-h-0 flex-1 overflow-y-auto px-1 pb-1">
+          {pullRequestLoading ? (
+            <div className="px-2 py-2 text-[12px] text-[#858585]">Loading…</div>
+          ) : pullRequestError ? (
+            <div className="px-2 py-2 text-[12px] leading-snug text-[#f48771]">
+              {pullRequestError}
+              <div className="mt-1 text-[11px] text-[#858585]">
+                Start mockserver:{" "}
+                <code className="font-mono">go run ./cmd/mockserver</code>
+              </div>
+            </div>
+          ) : pullRequestItems.length === 0 ? (
+            <div className="px-2 py-2 text-[12px] text-[#858585]">
+              No items.
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-0.5">
+              {pullRequestItems.map((pr) => {
+                const sel = pr.number === pullRequestSelectedNumber;
+                return (
+                  <li key={pr.id}>
+                    <button
+                      type="button"
+                      className={`${rowClass} flex-col items-stretch gap-0.5 py-1.5 ${sel ? selectedRow : ""}`}
+                      onClick={() => onPullRequestSelect?.(pr)}
+                    >
+                      <div className="flex min-w-0 items-center gap-1">
+                        <span
+                          className={`shrink-0 text-[10px] leading-none ${prStateDotClass(pr.state)}`}
+                          aria-hidden
+                        >
+                          ●
+                        </span>
+                        <span className="min-w-0 truncate font-medium">
+                          #{pr.number} {pr.title}
+                        </span>
+                      </div>
+                      <div className="truncate pl-3 text-[11px] text-[#858585]">
+                        {pr.author} ·{" "}
+                        <span className="font-mono text-[#b5cea8]">
+                          {pr.sourceBranch}
+                        </span>{" "}
+                        →{" "}
+                        <span className="font-mono text-[#b5cea8]">
+                          {pr.targetBranch}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+        <div className="shrink-0 border-t border-[var(--vscode-border)] px-2 py-2">
+          <div className="flex items-center justify-between gap-1 text-[11px] text-[#858585]">
+            <button
+              type="button"
+              className="rounded px-1.5 py-0.5 hover:bg-white/10 disabled:opacity-40"
+              disabled={pullRequestLoading || pullRequestPage <= 1}
+              onClick={() => onPullRequestPageChange?.(pullRequestPage - 1)}
+            >
+              Prev
+            </button>
+            <span className="tabular-nums">
+              {pullRequestPage} / {pullRequestTotalPages}
+            </span>
+            <button
+              type="button"
+              className="rounded px-1.5 py-0.5 hover:bg-white/10 disabled:opacity-40"
+              disabled={
+                pullRequestLoading || pullRequestPage >= pullRequestTotalPages
+              }
+              onClick={() => onPullRequestPageChange?.(pullRequestPage + 1)}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -342,7 +434,7 @@ export function Sidebar(props: Props) {
   const { activity, width, onResizeStart, ...rest } = props;
   return (
     <aside
-      className="relative flex min-w-0 shrink-0 flex-col border-r border-[var(--vscode-border)]"
+      className="relative flex min-h-0 min-w-0 shrink-0 flex-col border-r border-[var(--vscode-border)]"
       style={{ width, background: "var(--vscode-sideBar-bg)" }}
     >
       <SidebarBody {...rest} activity={activity} />

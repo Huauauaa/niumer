@@ -39,6 +39,8 @@ wails dev
 
 `wails dev` 会安装前端依赖、启动 Vite 开发服务并启动桌面窗口。
 
+**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。前端 **Pull Request** 活动栏会从 `GET /pull-request` 拉分页列表；选中项在右侧用 iframe 打开该项的 `url`（一般为同机 `GET /pr-preview/{id}` 页面）。可通过环境变量 **`VITE_PULL_REQUEST_API_BASE`** 指向其他基地址。
+
 ### Makefile 快捷命令
 
 | 命令 | 说明 |

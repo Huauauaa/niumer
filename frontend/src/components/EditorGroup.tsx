@@ -28,6 +28,10 @@ type Props = {
   jsonFormatterView?: boolean;
   jsonFormatterContent?: string;
   onJsonFormatterContentChange?: (value: string) => void;
+  /** Pull Request: iframe preview of selected item URL */
+  pullRequestView?: boolean;
+  pullRequestPreviewUrl?: string | null;
+  pullRequestBreadcrumbLabel?: string;
 };
 
 const sampleLines = [
@@ -64,6 +68,9 @@ export function EditorGroup({
   jsonFormatterView = false,
   jsonFormatterContent = "",
   onJsonFormatterContentChange,
+  pullRequestView = false,
+  pullRequestPreviewUrl = null,
+  pullRequestBreadcrumbLabel,
 }: Props) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -148,6 +155,13 @@ export function EditorGroup({
               <>
                 tool › <span className="text-[#e37933]">JSON formatter</span>
               </>
+            ) : pullRequestView ? (
+              <>
+                pull-request ›{" "}
+                <span className="text-[#e37933]">
+                  {pullRequestBreadcrumbLabel ?? "select a PR"}
+                </span>
+              </>
             ) : (
               <>
                 niumer ›{" "}
@@ -178,6 +192,19 @@ export function EditorGroup({
             error={workHourError}
             onRefresh={onRefreshWorkHour ?? (() => {})}
           />
+        ) : pullRequestView ? (
+          pullRequestPreviewUrl ? (
+            <iframe
+              title="Pull request preview"
+              className="allow-select min-h-0 min-w-0 flex-1 border-0 bg-[#1e1e1e]"
+              src={pullRequestPreviewUrl}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            />
+          ) : (
+            <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[#858585]">
+              Select a pull request in the sidebar to load its URL in this pane.
+            </div>
+          )
         ) : showBlogEmpty ? (
           <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[#858585]">
             No open document. Create a new file or open one from the Blog
