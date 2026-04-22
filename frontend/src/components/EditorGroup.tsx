@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AttendanceRecord } from "../types/workhour";
+import { MarkdownPreview } from "./MarkdownPreview";
 import { WorkHourView } from "./WorkHourView";
 
 export type EditorTab = { id: string; title: string; dirty?: boolean };
@@ -59,6 +60,7 @@ export function EditorGroup({
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const taRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
+  const [blogPreviewOpen, setBlogPreviewOpen] = useState(true);
 
   useEffect(() => {
     if (!blogEditor || !onSaveBlog) return;
@@ -118,8 +120,8 @@ export function EditorGroup({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex h-6 shrink-0 items-center border-b border-[var(--vscode-border)] px-4 text-[12px] text-[#cccccc] opacity-80">
-          <span className="truncate">
+        <div className="flex h-6 shrink-0 items-center gap-2 border-b border-[var(--vscode-border)] px-4 text-[12px] text-[#cccccc] opacity-80">
+          <span className="min-w-0 flex-1 truncate">
             {blogEditor ? (
               <>
                 blog › <span className="text-[#e37933]">{breadcrumbLabel ?? active?.title ?? "untitled"}</span>
@@ -134,6 +136,16 @@ export function EditorGroup({
               </>
             )}
           </span>
+          {blogEditor && !showBlogEmpty ? (
+            <button
+              type="button"
+              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-[#cccccc] opacity-90 hover:bg-white/10 hover:opacity-100"
+              title={blogPreviewOpen ? "隐藏 Markdown 预览" : "打开 Markdown 预览"}
+              onClick={() => setBlogPreviewOpen((v) => !v)}
+            >
+              {blogPreviewOpen ? "隐藏预览" : "打开预览"}
+            </button>
+          ) : null}
         </div>
 
         {workHourView ? (
@@ -148,26 +160,34 @@ export function EditorGroup({
             No open document. Create a new file or open one from the Blog explorer.
           </div>
         ) : blogEditor ? (
-          <div className="allow-select flex min-h-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">
-            <div
-              ref={gutterRef}
-              className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pr-3 pl-3 text-right text-[#858585]"
-            >
-              {Array.from({ length: lineCount }, (_, i) => (
-                <div key={i}>{i + 1}</div>
-              ))}
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <div className="allow-select flex min-h-0 min-w-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">
+              <div
+                ref={gutterRef}
+                className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pr-3 pl-3 text-right text-[#858585]"
+              >
+                {Array.from({ length: lineCount }, (_, i) => (
+                  <div key={i}>{i + 1}</div>
+                ))}
+              </div>
+              <textarea
+                ref={taRef}
+                className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[#1e1e1e] p-2 font-mono text-[13px] leading-6 text-[#d4d4d4] caret-[#aeafad] outline-none focus:ring-0"
+                spellCheck={false}
+                value={editorContent}
+                onChange={(e) => onEditorContentChange(e.target.value)}
+                onScroll={(e) => {
+                  if (gutterRef.current) gutterRef.current.scrollTop = e.currentTarget.scrollTop;
+                }}
+                placeholder="Start typing…"
+              />
             </div>
-            <textarea
-              ref={taRef}
-              className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[#1e1e1e] p-2 font-mono text-[13px] leading-6 text-[#d4d4d4] caret-[#aeafad] outline-none focus:ring-0"
-              spellCheck={false}
-              value={editorContent}
-              onChange={(e) => onEditorContentChange(e.target.value)}
-              onScroll={(e) => {
-                if (gutterRef.current) gutterRef.current.scrollTop = e.currentTarget.scrollTop;
-              }}
-              placeholder="Start typing…"
-            />
+            {blogPreviewOpen ? (
+              <>
+                <div className="w-px shrink-0 bg-[var(--vscode-border)]" aria-hidden />
+                <MarkdownPreview markdown={editorContent} />
+              </>
+            ) : null}
           </div>
         ) : (
           <div className="allow-select flex min-h-0 flex-1 overflow-auto font-mono text-[13px] leading-6">
