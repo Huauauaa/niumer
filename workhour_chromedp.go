@@ -10,17 +10,16 @@ import (
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+
+	"niumer/internal/config"
 )
 
 // 与 scripts/work-hour/get_work_hour.py 中 get_cookies 一致（无头 Chromium + 等待选择器）。
-const (
-	defaultWorkHourLoginURL = "http://127.0.0.1:17890/login"
-	defaultWorkHourWaitCSS  = ".search-total__num"
-)
-
+// 默认 URL / 选择器来自 configs/*.yaml（可用 WORK_HOUR_* 环境变量覆盖）。
 func getCookiesViaChromedp(parentCtx context.Context) (map[string]string, error) {
-	loginURL := envOr("WORK_HOUR_LOGIN_URL", defaultWorkHourLoginURL)
-	sel := envOr("WORK_HOUR_WAIT_CSS", defaultWorkHourWaitCSS)
+	wh := config.GetWorkHour()
+	loginURL := envOr("WORK_HOUR_LOGIN_URL", wh.LoginURL)
+	sel := envOr("WORK_HOUR_WAIT_CSS", wh.WaitCSS)
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),

@@ -1,0 +1,10 @@
+# Default work-hour integration (merged with config.<NIUMER_ENV>.yaml).
+# Override any value per environment in config.dev.yaml / config.prod.yaml.
+# Runtime env vars WORK_HOUR_* still override these (see README).
+
+workhour:
+  login_url: "http://127.0.0.1:17890/login"
+  wait_css: ".search-total__num"
+  tenant_url: "http://127.0.0.1:17890/id"
+  hr_id_url: "http://127.0.0.1:17890/hr-id"
+  api_url: "http://127.0.0.1:17890/work-hour"

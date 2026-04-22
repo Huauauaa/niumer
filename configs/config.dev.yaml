@@ -1,0 +1,4 @@
+# Development (mock server, local chromedp). Loaded when NIUMER_ENV is unset or "dev".
+# Leave empty to use only config.yaml defaults, or override fields below.
+
+workhour: {}

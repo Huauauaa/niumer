@@ -80,9 +80,11 @@ npm run dev
 1. **刷新**：Go 使用 **chromedp** 无头打开登录页获取 Cookie（流程与 `scripts/work-hour/get_work_hour.py` 中的 Playwright 示例一致），再请求业务接口并将结果写入 **SQLite**。
 2. **Cookie**：仅从浏览器会话读取，**不从环境变量注入**。
 3. **默认数据库**：未配置 `workHourDbPath` 时，使用用户配置目录下的 **`…/niumer/work_hour.db`**（与 `config.json` 同父目录 `niumer`）。
+4. **YAML 配置**：考勤相关 URL / CSS 选择器默认写在仓库 **`configs/config.yaml`**；按环境叠加 **`configs/config.dev.yaml`** 或 **`configs/config.prod.yaml`**（由环境变量 **`NIUMER_ENV`** 选择，未设置时视为 **`dev`**）。文件在构建时嵌入二进制，修改后需重新 `wails build` / `go build`。`WORK_HOUR_*` 环境变量仍**优先于** YAML 中的值。
 
-**可选环境变量**（均有占位默认值，可按实际环境覆盖）：
+**可选环境变量**（覆盖 YAML 中的同含义项）：
 
+- `NIUMER_ENV`：`dev` | `prod`，决定加载哪个 `config.<env>.yaml` 叠加层
 - `WORK_HOUR_LOGIN_URL`、`WORK_HOUR_WAIT_CSS`
 - `WORK_HOUR_CHROME_PATH`（Chrome/Chromium 可执行文件路径）
 - `WORK_HOUR_TENANT_URL`、`WORK_HOUR_HR_ID_URL`、`WORK_HOUR_API_URL`

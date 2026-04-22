@@ -13,14 +13,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"niumer/internal/config"
 )
 
-// 默认占位 URL；可用 WORK_HOUR_* 环境变量覆盖。
-const (
-	defaultTenantURL      = "http://127.0.0.1:17890/id"
-	defaultHrIDURL        = "http://127.0.0.1:17890/hr-id"
-	defaultWorkHourAPIURL = "http://127.0.0.1:17890/work-hour"
-)
+// 默认 URL 来自 configs/*.yaml；可用 WORK_HOUR_* 环境变量覆盖。
 
 func envOr(key, def string) string {
 	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
@@ -80,7 +77,7 @@ type hrIDResp struct {
 }
 
 func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[string]string) (string, error) {
-	url := envOr("WORK_HOUR_TENANT_URL", defaultTenantURL)
+	url := envOr("WORK_HOUR_TENANT_URL", config.GetWorkHour().TenantURL)
 	body := map[string]string{
 		"rentId":     "HuaWei",
 		"groupId":    "servicetimeflow",
@@ -109,7 +106,7 @@ func fetchHrID(ctx context.Context, client *http.Client, cookies map[string]stri
 	if len(userAccount) < 2 {
 		return 0, errors.New("userAccount 过短")
 	}
-	url := envOr("WORK_HOUR_HR_ID_URL", defaultHrIDURL)
+	url := envOr("WORK_HOUR_HR_ID_URL", config.GetWorkHour().HrIDURL)
 	body := map[string]string{
 		"employeeQuery": userAccount[1:],
 		"queryDate":     time.Now().Format("2006-01-02"),
@@ -134,7 +131,7 @@ func fetchHrID(ctx context.Context, client *http.Client, cookies map[string]stri
 }
 
 func fetchWorkHourPayload(ctx context.Context, client *http.Client, cookies map[string]string, hrID int64) (json.RawMessage, error) {
-	url := envOr("WORK_HOUR_API_URL", defaultWorkHourAPIURL)
+	url := envOr("WORK_HOUR_API_URL", config.GetWorkHour().APIURL)
 	body := map[string]any{
 		"hr_id":    hrID,
 		"locale":   "zh",

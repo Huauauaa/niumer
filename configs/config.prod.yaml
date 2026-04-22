@@ -1,0 +1,4 @@
+# Production: set real endpoints here. Loaded when NIUMER_ENV=prod.
+# Replace {} with non-empty workhour fields to override config.yaml.
+
+workhour: {}
