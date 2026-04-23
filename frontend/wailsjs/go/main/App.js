@@ -70,6 +70,10 @@ export function GetWorkHourRecords() {
   return window['go']['main']['App']['GetWorkHourRecords']();
 }
 
+export function GetWorkHourShiftSchedule() {
+  return window['go']['main']['App']['GetWorkHourShiftSchedule']();
+}
+
 export function ListBlogMarkdownFiles() {
   return window['go']['main']['App']['ListBlogMarkdownFiles']();
 }

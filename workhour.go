@@ -9,35 +9,35 @@ import (
 
 // AttendanceRecord mirrors attendance_records table (JSON field names from API / SQLite).
 type AttendanceRecord struct {
-	ID                        int64  `json:"id"`
-	CreationDate              string `json:"creationDate"`
-	CreatedBy                 string `json:"createdBy"`
-	LastUpdateDate            string `json:"lastUpdateDate"`
-	LastUpdatedBy             string `json:"lastUpdatedBy"`
-	OriginalID                string `json:"originalId"`
-	HrID                      int64  `json:"hrId"`
-	DataSource                string `json:"dataSource"`
-	ClockInReason             string `json:"clockInReason"`
-	AttendanceDate            string `json:"attendanceDate"`
-	ClockInDate               string `json:"clockInDate"`
-	ClockInTime               string `json:"clockInTime"`
-	DayID                     string `json:"dayId"`
-	ClockingInSequenceNumber  int64  `json:"clockingInSequenceNumber"`
-	EarlyClockInTime          string `json:"earlyClockInTime"`
-	LateClockInTime           string `json:"lateClockInTime"`
-	ClockInType               string `json:"clockInType"`
-	EarlyClockInType          string `json:"earlyClockInType"`
-	LateClockInType           string `json:"lateClockInType"`
-	AttendanceStatus          string `json:"attendanceStatus"`
-	MinuteNumber              string `json:"minuteNumber"`
-	HourNumber                string `json:"hourNumber"`
-	AttendProcessID           string `json:"attendProcessId"`
-	WorkDay                   string `json:"workDay"`
-	AttendanceStatusCode      string `json:"attendanceStatusCode"`
-	EarlyClockInReason        string `json:"earlyClockInReason"`
-	LateClockInReason         string `json:"lateClockInReason"`
-	EarlyClockTag             string `json:"earlyClockTag"`
-	LateClockTag              string `json:"lateClockTag"`
+	ID                       int64  `json:"id"`
+	CreationDate             string `json:"creationDate"`
+	CreatedBy                string `json:"createdBy"`
+	LastUpdateDate           string `json:"lastUpdateDate"`
+	LastUpdatedBy            string `json:"lastUpdatedBy"`
+	OriginalID               string `json:"originalId"`
+	HrID                     int64  `json:"hrId"`
+	DataSource               string `json:"dataSource"`
+	ClockInReason            string `json:"clockInReason"`
+	AttendanceDate           string `json:"attendanceDate"`
+	ClockInDate              string `json:"clockInDate"`
+	ClockInTime              string `json:"clockInTime"`
+	DayID                    string `json:"dayId"`
+	ClockingInSequenceNumber int64  `json:"clockingInSequenceNumber"`
+	EarlyClockInTime         string `json:"earlyClockInTime"`
+	LateClockInTime          string `json:"lateClockInTime"`
+	ClockInType              string `json:"clockInType"`
+	EarlyClockInType         string `json:"earlyClockInType"`
+	LateClockInType          string `json:"lateClockInType"`
+	AttendanceStatus         string `json:"attendanceStatus"`
+	MinuteNumber             string `json:"minuteNumber"`
+	HourNumber               string `json:"hourNumber"`
+	AttendProcessID          string `json:"attendProcessId"`
+	WorkDay                  string `json:"workDay"`
+	AttendanceStatusCode     string `json:"attendanceStatusCode"`
+	EarlyClockInReason       string `json:"earlyClockInReason"`
+	LateClockInReason        string `json:"lateClockInReason"`
+	EarlyClockTag            string `json:"earlyClockTag"`
+	LateClockTag             string `json:"lateClockTag"`
 	// EffectiveWorkHours 由应用层根据打卡与有效时段计算，不写入 SQLite。
 	EffectiveWorkHours float64 `json:"effectiveWorkHours"`
 }
@@ -133,18 +133,18 @@ func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 	var out []AttendanceRecord
 	for rows.Next() {
 		var (
-			id, hrID, seq                        sql.NullInt64
-			creationDate, createdBy              sql.NullString
-			lastUpdateDate, lastUpdatedBy        sql.NullString
-			originalID, dataSource, clockInReason sql.NullString
-			attendanceDate, clockInDate, clockInTime sql.NullString
-			dayID                                sql.NullString
-			earlyClockInTime, lateClockInTime    sql.NullString
+			id, hrID, seq                                  sql.NullInt64
+			creationDate, createdBy                        sql.NullString
+			lastUpdateDate, lastUpdatedBy                  sql.NullString
+			originalID, dataSource, clockInReason          sql.NullString
+			attendanceDate, clockInDate, clockInTime       sql.NullString
+			dayID                                          sql.NullString
+			earlyClockInTime, lateClockInTime              sql.NullString
 			clockInType, earlyClockInType, lateClockInType sql.NullString
-			attendanceStatus, minuteNumber, hourNumber sql.NullString
+			attendanceStatus, minuteNumber, hourNumber     sql.NullString
 			attendProcessID, workDay, attendanceStatusCode sql.NullString
-			earlyClockInReason, lateClockInReason sql.NullString
-			earlyClockTag, lateClockTag          sql.NullString
+			earlyClockInReason, lateClockInReason          sql.NullString
+			earlyClockTag, lateClockTag                    sql.NullString
 		)
 		if err := rows.Scan(
 			&id, &creationDate, &createdBy, &lastUpdateDate, &lastUpdatedBy, &originalID, &hrID, &dataSource,
@@ -186,7 +186,10 @@ func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 			EarlyClockTag:            ns(earlyClockTag),
 			LateClockTag:             ns(lateClockTag),
 		}
-		rec.EffectiveWorkHours = effectiveWorkHoursForRecord(rec)
+		rec.EffectiveWorkHours = effectiveWorkHoursForRecordWithWindows(
+			rec,
+			a.workHourEffectiveWindows(),
+		)
 		out = append(out, rec)
 	}
 	if err := rows.Err(); err != nil {

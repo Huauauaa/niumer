@@ -8,3 +8,5 @@ vendor-log.txt
 frontend/package.json.md5
 build/bin
 build/niumer
+# Go / Wails 在仓库根目录生成的可执行文件（勿提交）
+/niumer

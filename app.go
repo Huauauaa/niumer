@@ -3,11 +3,18 @@ package main
 import (
 	"context"
 	"log"
+	"sync"
 )
 
 // App is the Wails-bound application object.
 type App struct {
 	ctx context.Context
+
+	muWorkHourShift sync.RWMutex
+	// workHourShiftZh is the last data.shiftInformationDTO.shiftNameZh from POST /user-info.
+	workHourShiftZh string
+	// workHourEffWindows derived from shiftNameZh (Work / Rest); nil = use hardcoded default in compute.
+	workHourEffWindows []workHourTimeWindow
 }
 
 func NewApp() *App {

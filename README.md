@@ -79,7 +79,7 @@ npm run dev
 
 ## Work hour（考勤同步）
 
-1. **刷新**：Go 使用 **chromedp** 无头打开登录页获取 Cookie（流程与 `scripts/work-hour/get_work_hour.py` 中的 Playwright 示例一致），再请求业务接口并将结果写入 **SQLite**。
+1. **刷新**：Go 使用 **chromedp** 无头打开登录页获取 Cookie（无头 Chromium + 等待登录页上的选择器），再请求业务接口并将结果写入 **SQLite**。
 2. **Cookie**：仅从浏览器会话读取，**不从环境变量注入**。
 3. **默认数据库**：未配置 `workHourDbPath` 时，使用用户配置目录下的 **`…/niumer/work_hour.db`**（与 `config.json` 同父目录 `niumer`）。
 4. **YAML 配置**：考勤相关 URL / CSS 选择器默认写在仓库 **`configs/config.yaml`**；按环境叠加 **`configs/config.dev.yaml`** 或 **`configs/config.prod.yaml`**（由环境变量 **`NIUMER_ENV`** 选择，未设置时视为 **`dev`**）。文件在构建时嵌入二进制，修改后需重新 `wails build` / `go build`。`WORK_HOUR_*` 环境变量仍**优先于** YAML 中的值。
@@ -89,7 +89,7 @@ npm run dev
 - `NIUMER_ENV`：`dev` | `prod`，决定加载哪个 `config.<env>.yaml` 叠加层
 - `WORK_HOUR_LOGIN_URL`、`WORK_HOUR_WAIT_CSS`
 - `WORK_HOUR_CHROME_PATH`（Chrome/Chromium 可执行文件路径）
-- `WORK_HOUR_TENANT_URL`、`WORK_HOUR_HR_ID_URL`、`WORK_HOUR_API_URL`
+- `WORK_HOUR_TENANT_URL`、`WORK_HOUR_USER_INFO_URL`（考勤 **user-info** 接口 URL，默认 `…/user-info`）、`WORK_HOUR_API_URL`
 
 首次克隆或新增依赖后，在项目根执行：`make tidy` 或 `go mod tidy`。
 
@@ -138,7 +138,6 @@ go build -o build/niumer .
 | `frontend/src/components/` | VS Code 风格布局相关组件 |
 | `scripts/dev.sh` | 与 `make dev` 类似：固定 `GOPROXY` 后执行 `wails dev` |
 | `scripts/npm.sh` | 可选的 npm 包装脚本 |
-| `scripts/work-hour/get_work_hour.py` | 可选：Playwright 对照调试（非运行时依赖） |
 | `.vscode/settings.json` | 编辑器集成终端的 `GOPROXY` 等 |
 
 ## 参考

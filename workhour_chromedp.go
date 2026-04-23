@@ -14,7 +14,7 @@ import (
 	"niumer/internal/config"
 )
 
-// 与 scripts/work-hour/get_work_hour.py 中 get_cookies 一致（无头 Chromium + 等待选择器）。
+// 无头 Chromium 打开登录页并等待 WORK_HOUR_WAIT_CSS 选择器出现，再导出 Cookie。
 // 默认 URL / 选择器来自 configs/*.yaml（可用 WORK_HOUR_* 环境变量覆盖）。
 func getCookiesViaChromedp(parentCtx context.Context) (map[string]string, error) {
 	wh := config.GetWorkHour()

@@ -70,10 +70,23 @@ type tenantResp struct {
 	} `json:"data"`
 }
 
-type hrIDResp struct {
-	Data *struct {
-		HrID int64 `json:"hrId"`
+// userInfoResp matches POST /user-info (replaces legacy /hr-id envelope).
+type userInfoResp struct {
+	Status      int    `json:"status"`
+	MessageCode string `json:"messageCode"`
+	MessageText string `json:"messageText"`
+	OK          bool   `json:"ok"`
+	Data        *struct {
+		HrID                interface{} `json:"hrId"` // number or string from upstream
+		ShiftInformationDTO *struct {
+			ShiftNameZh string `json:"shiftNameZh"`
+		} `json:"shiftInformationDTO"`
 	} `json:"data"`
+}
+
+type workHourUserInfo struct {
+	HrID        int64
+	ShiftNameZh string
 }
 
 func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[string]string) (string, error) {
@@ -102,40 +115,55 @@ func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[stri
 	return tr.Data.Tenant.UserAccount, nil
 }
 
-func fetchHrID(ctx context.Context, client *http.Client, cookies map[string]string, userAccount string) (int64, error) {
+func fetchWorkHourUserInfo(ctx context.Context, client *http.Client, cookies map[string]string, userAccount string) (workHourUserInfo, error) {
+	var out workHourUserInfo
 	if len(userAccount) < 2 {
-		return 0, errors.New("userAccount 过短")
+		return out, errors.New("userAccount 过短")
 	}
-	url := envOr("WORK_HOUR_HR_ID_URL", config.GetWorkHour().HrIDURL)
+	url := envOr("WORK_HOUR_USER_INFO_URL", config.GetWorkHour().UserInfoURL)
 	body := map[string]string{
 		"employeeQuery": userAccount[1:],
 		"queryDate":     time.Now().Format("2006-01-02"),
 		"locale":        "zh",
-		"platform":      "pc",
+		"platform":      "PC",
 	}
 	raw, code, err := postJSON(ctx, client, url, body, cookies)
 	if err != nil {
-		return 0, err
+		return out, err
 	}
 	if code < 200 || code >= 300 {
-		return 0, fmt.Errorf("hr-id 接口 HTTP %d: %s", code, truncate(string(raw), 500))
+		return out, fmt.Errorf("user-info 接口 HTTP %d: %s", code, truncate(string(raw), 500))
 	}
-	var hr hrIDResp
-	if err := json.Unmarshal(raw, &hr); err != nil {
-		return 0, err
+	var env userInfoResp
+	if err := json.Unmarshal(raw, &env); err != nil {
+		return out, err
 	}
-	if hr.Data == nil {
-		return 0, errors.New("hr-id 响应缺少 data")
+	if env.Status != 200 || !env.OK {
+		return out, fmt.Errorf(
+			"user-info 业务失败: status=%d ok=%v message=%s (%s)",
+			env.Status, env.OK, env.MessageText, env.MessageCode,
+		)
 	}
-	return hr.Data.HrID, nil
+	if env.Data == nil {
+		return out, errors.New("user-info 响应缺少 data")
+	}
+	id := numToInt64(env.Data.HrID)
+	if id == 0 {
+		return out, errors.New("user-info 响应 data.hrId 无效或为空")
+	}
+	out.HrID = id
+	if env.Data.ShiftInformationDTO != nil {
+		out.ShiftNameZh = strings.TrimSpace(env.Data.ShiftInformationDTO.ShiftNameZh)
+	}
+	return out, nil
 }
 
 func fetchWorkHourPayload(ctx context.Context, client *http.Client, cookies map[string]string, hrID int64) (json.RawMessage, error) {
 	url := envOr("WORK_HOUR_API_URL", config.GetWorkHour().APIURL)
 	body := map[string]any{
-		"hr_id":    hrID,
+		"hrId":     hrID,
 		"locale":   "zh",
-		"platform": "pc",
+		"platform": "PC",
 	}
 	raw, code, err := postJSON(ctx, client, url, body, cookies)
 	if err != nil {
@@ -309,11 +337,12 @@ func (a *App) RefreshWorkHourData() ([]AttendanceRecord, error) {
 	if err != nil {
 		return nil, fmt.Errorf("获取 userAccount: %w", err)
 	}
-	hrID, err := fetchHrID(ctx, client, cookies, uid)
+	uinfo, err := fetchWorkHourUserInfo(ctx, client, cookies, uid)
 	if err != nil {
-		return nil, fmt.Errorf("获取 hrId: %w", err)
+		return nil, fmt.Errorf("获取 user-info: %w", err)
 	}
-	raw, err := fetchWorkHourPayload(ctx, client, cookies, hrID)
+	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
+	raw, err := fetchWorkHourPayload(ctx, client, cookies, uinfo.HrID)
 	if err != nil {
 		return nil, fmt.Errorf("获取考勤数据: %w", err)
 	}

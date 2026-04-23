@@ -21,6 +21,8 @@ type Props = {
   onBlogRename: (oldName: string, newName: string) => void | Promise<void>;
   /** 各条记录 effectiveWorkHours 之和（小时） */
   workHourTotalEffectiveHours?: number;
+  /** 来自 /user-info 的 data.shiftInformationDTO.shiftNameZh（刷新考勤后更新） */
+  workHourShiftNameZh?: string;
   /** Pull Request list (activity === pullRequest); from mockserver GET /pull-request */
   pullRequestItems?: PullRequestListItem[];
   pullRequestPage?: number;
@@ -281,6 +283,7 @@ function SidebarBody({
   onBlogDelete,
   onBlogRename,
   workHourTotalEffectiveHours,
+  workHourShiftNameZh = "",
   pullRequestItems = [],
   pullRequestPage = 1,
   pullRequestTotalPages = 1,
@@ -457,11 +460,15 @@ function SidebarBody({
           <div className="mb-1.5 text-[11px] uppercase text-[#858585]">
             作息
           </div>
-          <ul className="space-y-1 font-mono text-[12px] leading-snug text-[#858585]">
-            <li>08:00 – 12:00</li>
-            <li>13:30 – 17:30</li>
-            <li>18:00 – 24:00</li>
-          </ul>
+          {workHourShiftNameZh.trim() !== "" ? (
+            <p className="allow-select break-words font-mono text-[11px] leading-relaxed text-[#858585]">
+              {workHourShiftNameZh}
+            </p>
+          ) : (
+            <p className="text-[12px] leading-relaxed text-[#858585]">
+              在主区域刷新考勤后，将显示「user-info」接口中的班次说明（shiftNameZh）。
+            </p>
+          )}
         </div>
       </div>
     </div>

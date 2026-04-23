@@ -36,6 +36,8 @@ export function GetWorkHourDBPath():Promise<string>;
 
 export function GetWorkHourRecords():Promise<Array<main.AttendanceRecord>>;
 
+export function GetWorkHourShiftSchedule():Promise<string>;
+
 export function ListBlogMarkdownFiles():Promise<Array<string>>;
 
 export function ListCustomReminders():Promise<Array<main.CustomReminder>>;

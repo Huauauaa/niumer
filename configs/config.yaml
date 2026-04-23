@@ -6,5 +6,6 @@ workhour:
   login_url: "http://127.0.0.1:17890/login"
   wait_css: ".search-total__num"
   tenant_url: "http://127.0.0.1:17890/id"
-  hr_id_url: "http://127.0.0.1:17890/hr-id"
+  # POST /user-info (envelope: status, data.hrId, shiftNameZh, ok).
+  user_info_url: "http://127.0.0.1:17890/user-info"
   api_url: "http://127.0.0.1:17890/work-hour"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 func TestEffectiveWorkHoursForRecord_missingClock(t *testing.T) {
@@ -75,5 +76,57 @@ func TestEffectiveWorkHoursForRecord_typicalDay0921(t *testing.T) {
 	// 9–12: 3h; 13:30–17:30: 4h; 18–21: 3h
 	if g := effectiveWorkHoursForRecord(r); g != 10 {
 		t.Fatalf("want 10, got %v", g)
+	}
+}
+
+func TestParseWorkHourWindowsFromShiftNameZh_flex(t *testing.T) {
+	zh := "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30,Card: 05:00-04:59"
+	w, ok := parseWorkHourWindowsFromShiftNameZh(zh)
+	if !ok || len(w) != 4 {
+		t.Fatalf("want 4 windows ok=true, got ok=%v len=%d", ok, len(w))
+	}
+	want := []workHourTimeWindow{
+		{0, 5 * time.Hour},
+		{8 * time.Hour, 12 * time.Hour},
+		{13*time.Hour + 30*time.Minute, 17*time.Hour + 30*time.Minute},
+		{18 * time.Hour, 24 * time.Hour},
+	}
+	for i := range want {
+		if w[i].start != want[i].start || w[i].end != want[i].end {
+			t.Fatalf("window[%d] want %v-%v, got %v-%v", i, want[i].start, want[i].end, w[i].start, w[i].end)
+		}
+	}
+}
+
+func TestEffectiveWorkHoursForRecord_flexShiftWindows(t *testing.T) {
+	zh := "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30"
+	wins, ok := parseWorkHourWindowsFromShiftNameZh(zh)
+	if !ok {
+		t.Fatal("parse failed")
+	}
+	r := AttendanceRecord{
+		AttendanceDate:   "2026-04-21",
+		EarlyClockInTime: "09:00",
+		LateClockInTime:  "21:00",
+	}
+	// 日班 3h+4h；晚间 18–21 计 3h → 10h
+	if g := effectiveWorkHoursForRecordWithWindows(r, wins); g != 10 {
+		t.Fatalf("want 10, got %v", g)
+	}
+}
+
+func TestEffectiveWorkHoursForRecord_flexShiftWindowsEarlyMorning(t *testing.T) {
+	zh := "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00"
+	wins, ok := parseWorkHourWindowsFromShiftNameZh(zh)
+	if !ok {
+		t.Fatal("parse failed")
+	}
+	r := AttendanceRecord{
+		AttendanceDate:   "2026-04-21",
+		EarlyClockInTime: "02:00",
+		LateClockInTime:  "04:00",
+	}
+	if g := effectiveWorkHoursForRecordWithWindows(r, wins); g != 2 {
+		t.Fatalf("want 2 (凌晨 02–04 在 [0,05) 内), got %v", g)
 	}
 }

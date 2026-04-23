@@ -19,6 +19,7 @@ import {
   GetJsonFormatterWorkDir,
   GetReminderDBPath,
   GetWorkHourRecords,
+  GetWorkHourShiftSchedule,
   ListBlogMarkdownFiles,
   ListCustomReminders,
   ReadBlogFile,
@@ -82,6 +83,7 @@ export default function App() {
   );
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
+  const [workHourShiftNameZh, setWorkHourShiftNameZh] = useState("");
 
   const [prPage, setPrPage] = useState(1);
   const [prTotalPages, setPrTotalPages] = useState(1);
@@ -222,6 +224,11 @@ export default function App() {
     try {
       const rows = await GetWorkHourRecords();
       setWorkHourRecords(rows as AttendanceRecord[]);
+      try {
+        setWorkHourShiftNameZh(await GetWorkHourShiftSchedule());
+      } catch {
+        setWorkHourShiftNameZh("");
+      }
     } catch (e) {
       setWorkHourError(e instanceof Error ? e.message : String(e));
       setWorkHourRecords([]);
@@ -237,6 +244,11 @@ export default function App() {
     try {
       const rows = await RefreshWorkHourData();
       setWorkHourRecords(rows as AttendanceRecord[]);
+      try {
+        setWorkHourShiftNameZh(await GetWorkHourShiftSchedule());
+      } catch {
+        setWorkHourShiftNameZh("");
+      }
     } catch (e) {
       setWorkHourError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -584,6 +596,9 @@ export default function App() {
                     0,
                   )
                 : undefined
+            }
+            workHourShiftNameZh={
+              activity === "workhour" ? workHourShiftNameZh : undefined
             }
             pullRequestItems={activity === "pullRequest" ? prItems : undefined}
             pullRequestPage={prPage}

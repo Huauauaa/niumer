@@ -1,5 +1,5 @@
 // Work-hour API mock: same routes and JSON shapes as the placeholder
-// http://127.0.0.1:17890/id, /hr-id, /work-hour (defaults in workhour_fetch.go).
+// http://127.0.0.1:17890/id, /user-info, /work-hour (defaults in workhour_fetch.go).
 // Also: GET /pull-request (paginated PR list), GET /pr-preview/{id} (HTML for iframe).
 //
 // Run from repo root:
@@ -9,7 +9,7 @@
 // Then point the app at it, for example:
 //
 //	export WORK_HOUR_TENANT_URL=http://127.0.0.1:17890/id
-//	export WORK_HOUR_HR_ID_URL=http://127.0.0.1:17890/hr-id
+//	export WORK_HOUR_USER_INFO_URL=http://127.0.0.1:17890/user-info
 //	export WORK_HOUR_API_URL=http://127.0.0.1:17890/work-hour
 package main
 
@@ -37,11 +37,10 @@ func main() {
 	// Minimal page for chromedp / playwright (WORK_HOUR_WAIT_CSS default).
 	mux.HandleFunc("GET /login", handleLogin)
 	mux.HandleFunc("POST /id", handleTenant)
-	mux.HandleFunc("POST /hr-id", handleHrID)
+	mux.HandleFunc("POST /user-info", handleUserInfo)
 	mux.HandleFunc("POST /work-hour", handleWorkHour)
 	mux.HandleFunc("GET /pull-request", handlePullRequestList)
 	mux.HandleFunc("GET /pr-preview/{id}", handlePRPreview)
-
 	log.Printf("mockserver listening on http://%s", *addr)
 	log.Fatal(http.ListenAndServe(*addr, withCORS(logRequests(mux))))
 }
@@ -95,7 +94,7 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func handleTenant(w http.ResponseWriter, r *http.Request) {
-	// Stable fake account: first rune is skipped as employeeQuery in fetchHrID.
+	// Stable fake account: first rune is skipped as employeeQuery in fetchWorkHourUserInfo.
 	const userAccount = "M10001"
 	writeJSON(w, http.StatusOK, map[string]any{
 		"data": map[string]any{
@@ -106,7 +105,7 @@ func handleTenant(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func handleHrID(w http.ResponseWriter, r *http.Request) {
+func handleUserInfo(w http.ResponseWriter, r *http.Request) {
 	var body map[string]any
 	_ = json.NewDecoder(r.Body).Decode(&body)
 	eq, _ := body["employeeQuery"].(string)
@@ -118,9 +117,20 @@ func handleHrID(w http.ResponseWriter, r *http.Request) {
 			hrID = int64(len(eq))*1000 + 42
 		}
 	}
+	// Same shape as real /user-info: hrId may be string or number in production.
 	writeJSON(w, http.StatusOK, map[string]any{
+		"status":      200,
+		"messageCode": "attendance.response.ok",
+		"messageText": "Success",
+		"ok":          true,
 		"data": map[string]any{
-			"hrId": hrID,
+			"hrId":             strconv.FormatInt(hrID, 10),
+			"attendanceScheme": "MOCK",
+			"departmentDTO":    map[string]any{"departmentChineseName": "Mock Dept"},
+			"shiftInformationDTO": map[string]any{
+				"shiftNameZh": "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30,Card: 05:00-04:59",
+			},
+			"isTopmanager": false,
 		},
 	})
 }
@@ -128,7 +138,7 @@ func handleHrID(w http.ResponseWriter, r *http.Request) {
 func handleWorkHour(w http.ResponseWriter, r *http.Request) {
 	var body map[string]any
 	_ = json.NewDecoder(r.Body).Decode(&body)
-	hrID := jsonNumberToInt64(body["hr_id"])
+	hrID := jsonNumberToInt64(body["hrId"])
 	if hrID == 0 {
 		hrID = jsonNumberToInt64(body["hrId"])
 	}
@@ -217,16 +227,16 @@ func pullRequestItemMap(n int, base string) map[string]any {
 	}
 	now := time.Now().UTC().Format(time.RFC3339)
 	return map[string]any{
-		"id":             n,
-		"number":         n,
-		"url":            fmt.Sprintf("%s/pr-preview/%d", strings.TrimSuffix(base, "/"), n),
-		"title":          fmt.Sprintf("feat: mock pull request #%d (%s)", n, prState(n)),
-		"author":         fmt.Sprintf("dev%d", (n%9)+1),
-		"sourceBranch":   fmt.Sprintf("feature/pr-%d", n),
-		"targetBranch":   target,
-		"state":          prState(n),
-		"createdAt":      now,
-		"updatedAt":      now,
+		"id":           n,
+		"number":       n,
+		"url":          fmt.Sprintf("%s/pr-preview/%d", strings.TrimSuffix(base, "/"), n),
+		"title":        fmt.Sprintf("feat: mock pull request #%d (%s)", n, prState(n)),
+		"author":       fmt.Sprintf("dev%d", (n%9)+1),
+		"sourceBranch": fmt.Sprintf("feature/pr-%d", n),
+		"targetBranch": target,
+		"state":        prState(n),
+		"createdAt":    now,
+		"updatedAt":    now,
 	}
 }
 
@@ -252,11 +262,11 @@ func handlePullRequestList(w http.ResponseWriter, r *http.Request) {
 	start := (page - 1) * pageSize
 	if start >= total {
 		writeJSON(w, http.StatusOK, map[string]any{
-			"items":       []any{},
-			"total":       total,
-			"page":        page,
-			"pageSize":    pageSize,
-			"totalPages":  totalPages,
+			"items":      []any{},
+			"total":      total,
+			"page":       page,
+			"pageSize":   pageSize,
+			"totalPages": totalPages,
 		})
 		return
 	}
@@ -269,11 +279,11 @@ func handlePullRequestList(w http.ResponseWriter, r *http.Request) {
 		items = append(items, pullRequestItemMap(i+1, base))
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"items":       items,
-		"total":       total,
-		"page":        page,
-		"pageSize":    pageSize,
-		"totalPages":  totalPages,
+		"items":      items,
+		"total":      total,
+		"page":       page,
+		"pageSize":   pageSize,
+		"totalPages": totalPages,
 	})
 }
 

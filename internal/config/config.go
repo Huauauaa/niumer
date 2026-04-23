@@ -15,8 +15,9 @@ type WorkHourSettings struct {
 	LoginURL  string `yaml:"login_url"`
 	WaitCSS   string `yaml:"wait_css"`
 	TenantURL string `yaml:"tenant_url"`
-	HrIDURL   string `yaml:"hr_id_url"`
-	APIURL    string `yaml:"api_url"`
+	// UserInfoURL is the POST URL for the attendance user-info endpoint (hrId, shiftNameZh, etc.).
+	UserInfoURL string `yaml:"user_info_url"`
+	APIURL      string `yaml:"api_url"`
 }
 
 // Root is the top-level application YAML shape.
@@ -73,8 +74,8 @@ func mergeWorkHour(base, over WorkHourSettings) WorkHourSettings {
 	if strings.TrimSpace(over.TenantURL) != "" {
 		out.TenantURL = over.TenantURL
 	}
-	if strings.TrimSpace(over.HrIDURL) != "" {
-		out.HrIDURL = over.HrIDURL
+	if strings.TrimSpace(over.UserInfoURL) != "" {
+		out.UserInfoURL = over.UserInfoURL
 	}
 	if strings.TrimSpace(over.APIURL) != "" {
 		out.APIURL = over.APIURL
