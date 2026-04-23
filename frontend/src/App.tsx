@@ -54,11 +54,36 @@ const DEV_FALLBACK_WELCOME = `# Welcome
 Running without Wails backend: files are not saved to disk. Use \`wails dev\` from the project root.
 `;
 
+/** 与考勤表「日期」列一致：attendanceDate 或 clockInDate 的 yyyy-mm-dd */
+function workHourCalendarDayKey(r: AttendanceRecord): string {
+  const d = (r.attendanceDate || r.clockInDate || "").trim();
+  return d.length >= 10 ? d.slice(0, 10) : "";
+}
+
+/** 加班（小时）：每个日历日先汇总当日工时，再 max(0, 当日合计 − 8)，最后按日相加 */
+function computeWorkHourOvertimeHours(records: AttendanceRecord[]): number {
+  const byDay = new Map<string, number>();
+  for (const r of records) {
+    const key = workHourCalendarDayKey(r);
+    if (!key) continue;
+    byDay.set(
+      key,
+      (byDay.get(key) ?? 0) + (Number(r.effectiveWorkHours) || 0),
+    );
+  }
+  let sum = 0;
+  for (const dayTotal of byDay.values()) {
+    sum += Math.max(0, dayTotal - 8);
+  }
+  return Math.round(sum * 100) / 100;
+}
+
 export default function App() {
   const [activity, setActivity] = useState<ActivityId>("blog");
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [panelHeight, setPanelHeight] = useState(200);
-  const [panelVisible, setPanelVisible] = useState(true);
+  /** 底部 Terminal 区默认收起，需要时点「Panel (show)」展开 */
+  const [panelVisible, setPanelVisible] = useState(false);
 
   const [blogDocs, setBlogDocs] = useState<BlogDocument[]>([]);
   const [blogOpenTabs, setBlogOpenTabs] = useState<string[]>([]);
@@ -84,6 +109,11 @@ export default function App() {
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
   const [workHourShiftNameZh, setWorkHourShiftNameZh] = useState("");
+
+  const workHourOvertimeHours = useMemo(
+    () => computeWorkHourOvertimeHours(workHourRecords),
+    [workHourRecords],
+  );
 
   const [prPage, setPrPage] = useState(1);
   const [prTotalPages, setPrTotalPages] = useState(1);
@@ -217,7 +247,7 @@ export default function App() {
     }
   }, []);
 
-  /** 仅从本地数据库读取（进入 Workhour 页时调用） */
+  /** 仅从本地数据库读取（例如偏好设置后需要立刻展示缓存） */
   const loadWorkHour = useCallback(async () => {
     setWorkHourLoading(true);
     setWorkHourError(null);
@@ -294,8 +324,9 @@ export default function App() {
 
   useEffect(() => {
     if (activity !== "workhour") return;
-    void loadWorkHour();
-  }, [activity, loadWorkHour]);
+    // 进入工时页：用启动阶段缓存的 Cookie 自动请求 workhour_url 并刷新列表
+    void refreshWorkHour();
+  }, [activity, refreshWorkHour]);
 
   useEffect(() => {
     if (activity !== "pullRequest") return;
@@ -596,6 +627,9 @@ export default function App() {
                     0,
                   )
                 : undefined
+            }
+            workHourOvertimeHours={
+              activity === "workhour" ? workHourOvertimeHours : undefined
             }
             workHourShiftNameZh={
               activity === "workhour" ? workHourShiftNameZh : undefined

@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"path/filepath"
+	"strings"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -76,6 +78,16 @@ CREATE TABLE IF NOT EXISTS attendance_records (
 );
 `
 
+const workHourUserProfileSchema = `
+CREATE TABLE IF NOT EXISTS workhour_user_profile (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    userAccount TEXT,
+    hrId INTEGER NOT NULL DEFAULT 0,
+    shiftNameZh TEXT,
+    updatedAt TEXT
+);
+`
+
 func (a *App) openWorkHourDB() (*sql.DB, error) {
 	p, err := a.resolvedWorkHourDBPath()
 	if err != nil {
@@ -91,7 +103,25 @@ func (a *App) openWorkHourDB() (*sql.DB, error) {
 		_ = db.Close()
 		return nil, err
 	}
+	if _, err := db.Exec(workHourUserProfileSchema); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
 	return db, nil
+}
+
+// upsertWorkHourUserProfile persists tenant + user-info fields (single logical row id=1).
+func (a *App) upsertWorkHourUserProfile(userAccount string, hrID int64, shiftNameZh string) error {
+	db, err := a.openWorkHourDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	_, err = db.Exec(
+		`INSERT OR REPLACE INTO workhour_user_profile (id, userAccount, hrId, shiftNameZh, updatedAt) VALUES (1, ?, ?, ?, ?)`,
+		userAccount, hrID, shiftNameZh, time.Now().UTC().Format(time.RFC3339),
+	)
+	return err
 }
 
 func ns(s sql.NullString) string {
@@ -108,7 +138,8 @@ func ni(n sql.NullInt64) int64 {
 	return 0
 }
 
-// GetWorkHourRecords returns all rows from attendance_records (newest dates first).
+// GetWorkHourRecords returns rows from attendance_records (newest dates first)，
+// 展示层忽略上班或下班打卡时间为空的记录（仍保留在 SQLite 中）。
 func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 	db, err := a.openWorkHourDB()
 	if err != nil {
@@ -190,6 +221,9 @@ func (a *App) GetWorkHourRecords() ([]AttendanceRecord, error) {
 			rec,
 			a.workHourEffectiveWindows(),
 		)
+		if strings.TrimSpace(rec.EarlyClockInTime) == "" || strings.TrimSpace(rec.LateClockInTime) == "" {
+			continue
+		}
 		out = append(out, rec)
 	}
 	if err := rows.Err(); err != nil {

@@ -1,7 +1,7 @@
 package main
 
 // GetWorkHourShiftSchedule returns the last shiftNameZh from a successful /user-info call
-// during RefreshWorkHourData (empty until then).
+// during startup bootstrap or RefreshWorkHourData recovery (empty until then).
 func (a *App) GetWorkHourShiftSchedule() string {
 	if a == nil {
 		return ""

@@ -8,4 +8,4 @@ workhour:
   tenant_url: "http://127.0.0.1:17890/id"
   # POST /user-info (envelope: status, data.hrId, shiftNameZh, ok).
   user_info_url: "http://127.0.0.1:17890/user-info"
-  api_url: "http://127.0.0.1:17890/work-hour"
+  workhour_url: "http://127.0.0.1:17890/work-hour"

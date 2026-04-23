@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -159,7 +160,7 @@ func fetchWorkHourUserInfo(ctx context.Context, client *http.Client, cookies map
 }
 
 func fetchWorkHourPayload(ctx context.Context, client *http.Client, cookies map[string]string, hrID int64) (json.RawMessage, error) {
-	url := envOr("WORK_HOUR_API_URL", config.GetWorkHour().APIURL)
+	url := envOr("WORK_HOUR_WORKHOUR_URL", config.GetWorkHour().WorkHourURL)
 	body := map[string]any{
 		"hrId":     hrID,
 		"locale":   "zh",
@@ -322,27 +323,135 @@ func numToInt64(v interface{}) int64 {
 	}
 }
 
-// RefreshWorkHourData 拉取远程考勤 JSON、写入 SQLite，再查询返回列表。
-func (a *App) RefreshWorkHourData() ([]AttendanceRecord, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-	defer cancel()
+func cloneCookieMap(m map[string]string) map[string]string {
+	if len(m) == 0 {
+		return nil
+	}
+	out := make(map[string]string, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}
+
+func (a *App) workHourCookiesForHTTP() map[string]string {
+	if a == nil {
+		return nil
+	}
+	a.muWorkHourAuth.RLock()
+	defer a.muWorkHourAuth.RUnlock()
+	return cloneCookieMap(a.workHourCookies)
+}
+
+// bootstrapWorkHourSession：login_url（Cookie）→ tenant_url → user_info_url，并写入全局 Cookie、hrId、班次与 SQLite 用户概要。
+func (a *App) bootstrapWorkHourSession(ctx context.Context) (err error) {
+	if a == nil {
+		return errors.New("app is nil")
+	}
+	defer func() {
+		a.muWorkHourAuth.Lock()
+		a.workHourBootstrapErr = err
+		a.muWorkHourAuth.Unlock()
+	}()
 
 	cookies, err := getCookiesViaChromedp(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	client := workHourHTTPClient()
+	a.muWorkHourAuth.Lock()
+	a.workHourCookies = cloneCookieMap(cookies)
+	a.muWorkHourAuth.Unlock()
 
-	uid, err := fetchUserAccount(ctx, client, cookies)
+	client := workHourHTTPClient()
+	ck := a.workHourCookiesForHTTP()
+	uid, err := fetchUserAccount(ctx, client, ck)
 	if err != nil {
-		return nil, fmt.Errorf("获取 userAccount: %w", err)
+		return fmt.Errorf("获取 userAccount: %w", err)
 	}
-	uinfo, err := fetchWorkHourUserInfo(ctx, client, cookies, uid)
+	uinfo, err := fetchWorkHourUserInfo(ctx, client, ck, uid)
 	if err != nil {
-		return nil, fmt.Errorf("获取 user-info: %w", err)
+		return fmt.Errorf("获取 user-info: %w", err)
+	}
+	a.muWorkHourAuth.Lock()
+	a.workHourHrID = uinfo.HrID
+	a.workHourUserAccount = uid
+	a.muWorkHourAuth.Unlock()
+	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
+	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh); upErr != nil {
+		log.Printf("niumer: persist workhour_user_profile: %v", upErr)
+	}
+	return nil
+}
+
+// ensureWorkHourUserAndHRID 在已有 Cookie 的前提下确保 hrId 已就绪（必要时仅重试 tenant + user-info，不再开浏览器）。
+func (a *App) ensureWorkHourUserAndHRID(ctx context.Context) error {
+	if a == nil {
+		return errors.New("app is nil")
+	}
+	a.muWorkHourAuth.RLock()
+	hasCookies := len(a.workHourCookies) > 0
+	hrID := a.workHourHrID
+	bootErr := a.workHourBootstrapErr
+	a.muWorkHourAuth.RUnlock()
+	if hasCookies && hrID != 0 {
+		return nil
+	}
+	if !hasCookies {
+		if bootErr != nil {
+			return fmt.Errorf("无有效考勤 Cookie: %w", bootErr)
+		}
+		return errors.New("无有效考勤 Cookie（请确认登录页与 WORK_HOUR_WAIT_CSS）")
+	}
+
+	client := workHourHTTPClient()
+	ck := a.workHourCookiesForHTTP()
+	uid, err := fetchUserAccount(ctx, client, ck)
+	if err != nil {
+		return fmt.Errorf("重新获取 userAccount: %w", err)
+	}
+	uinfo, err := fetchWorkHourUserInfo(ctx, client, ck, uid)
+	if err != nil {
+		return fmt.Errorf("重新获取 user-info: %w", err)
 	}
 	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
-	raw, err := fetchWorkHourPayload(ctx, client, cookies, uinfo.HrID)
+	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh); upErr != nil {
+		log.Printf("niumer: persist workhour_user_profile: %v", upErr)
+	}
+	a.muWorkHourAuth.Lock()
+	a.workHourHrID = uinfo.HrID
+	a.workHourUserAccount = uid
+	a.muWorkHourAuth.Unlock()
+	return nil
+}
+
+// RefreshWorkHourData 使用启动阶段缓存的 Cookie，仅请求 workhour_url 拉取考勤 JSON、写入 SQLite，再查询返回列表。
+func (a *App) RefreshWorkHourData() ([]AttendanceRecord, error) {
+	if a == nil {
+		return nil, errors.New("app is nil")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	select {
+	case <-a.workHourBootstrapDone:
+	case <-ctx.Done():
+		return nil, errors.New("等待考勤登录阶段结束超时")
+	}
+
+	if err := a.ensureWorkHourUserAndHRID(ctx); err != nil {
+		return nil, err
+	}
+
+	a.muWorkHourAuth.RLock()
+	hrID := a.workHourHrID
+	a.muWorkHourAuth.RUnlock()
+	if hrID == 0 {
+		return nil, errors.New("缺少 hrId，无法拉取考勤明细")
+	}
+
+	client := workHourHTTPClient()
+	cookies := a.workHourCookiesForHTTP()
+	raw, err := fetchWorkHourPayload(ctx, client, cookies, hrID)
 	if err != nil {
 		return nil, fmt.Errorf("获取考勤数据: %w", err)
 	}

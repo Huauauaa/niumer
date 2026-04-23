@@ -21,6 +21,8 @@ type Props = {
   onBlogRename: (oldName: string, newName: string) => void | Promise<void>;
   /** 各条记录 effectiveWorkHours 之和（小时） */
   workHourTotalEffectiveHours?: number;
+  /** 加班（小时）：按日历日汇总 max(0, 当日工时合计 − 8) 后求和 */
+  workHourOvertimeHours?: number;
   /** 来自 /user-info 的 data.shiftInformationDTO.shiftNameZh（刷新考勤后更新） */
   workHourShiftNameZh?: string;
   /** Pull Request list (activity === pullRequest); from mockserver GET /pull-request */
@@ -283,6 +285,7 @@ function SidebarBody({
   onBlogDelete,
   onBlogRename,
   workHourTotalEffectiveHours,
+  workHourOvertimeHours,
   workHourShiftNameZh = "",
   pullRequestItems = [],
   pullRequestPage = 1,
@@ -446,14 +449,26 @@ function SidebarBody({
         Workhour
       </div>
       <div className="allow-select min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 text-[13px] text-[#cccccc]">
-        <div>
-          <div className="mb-1 text-[11px] uppercase text-[#858585]">
-            总工时
+        <div className="flex flex-wrap items-end gap-x-8 gap-y-2">
+          <div>
+            <div className="mb-1 text-[11px] uppercase text-[#858585]">
+              总工时
+            </div>
+            <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
+              {workHourTotalEffectiveHours === undefined
+                ? "—"
+                : `${workHourTotalEffectiveHours.toFixed(2)} h`}
+            </div>
           </div>
-          <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
-            {workHourTotalEffectiveHours === undefined
-              ? "—"
-              : `${workHourTotalEffectiveHours.toFixed(2)} h`}
+          <div>
+            <div className="mb-1 text-[11px] uppercase text-[#858585]">
+              加班
+            </div>
+            <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
+              {workHourOvertimeHours === undefined
+                ? "—"
+                : `${workHourOvertimeHours.toFixed(2)} h`}
+            </div>
           </div>
         </div>
         <div>

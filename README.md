@@ -89,7 +89,7 @@ npm run dev
 - `NIUMER_ENV`：`dev` | `prod`，决定加载哪个 `config.<env>.yaml` 叠加层
 - `WORK_HOUR_LOGIN_URL`、`WORK_HOUR_WAIT_CSS`
 - `WORK_HOUR_CHROME_PATH`（Chrome/Chromium 可执行文件路径）
-- `WORK_HOUR_TENANT_URL`、`WORK_HOUR_USER_INFO_URL`（考勤 **user-info** 接口 URL，默认 `…/user-info`）、`WORK_HOUR_API_URL`
+- `WORK_HOUR_TENANT_URL`、`WORK_HOUR_USER_INFO_URL`（考勤 **user-info** 接口 URL，默认 `…/user-info`）、`WORK_HOUR_WORKHOUR_URL`（考勤明细列表接口，对应 YAML `workhour_url`）
 
 首次克隆或新增依赖后，在项目根执行：`make tidy` 或 `go mod tidy`。
 
