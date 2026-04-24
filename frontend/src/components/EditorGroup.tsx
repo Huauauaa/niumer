@@ -48,7 +48,7 @@ const sampleLines = [
   "  return (",
   '    <section className="p-4">',
   '      <h1 className="text-lg">Welcome to niumer</h1>',
-  '      <p className="text-sm text-[#858585]">',
+  '      <p className="text-sm text-[var(--vscode-fg-muted)]">',
   "        Layout mirrors VS Code: activity bar, sidebar, panel, status bar.",
   "      </p>",
   "    </section>",
@@ -117,7 +117,7 @@ export function EditorGroup({
   return (
     <div className={shellClass} style={shellStyle}>
       <div
-        className="flex h-9 shrink-0 items-end gap-px overflow-x-auto border-b border-[var(--vscode-border)] bg-[#252526]"
+        className="flex h-9 shrink-0 items-end gap-px overflow-x-auto border-b border-[var(--vscode-border)] bg-[var(--vscode-tab-row-bg)]"
         role="tablist"
       >
         {tabs.map((tab) => {
@@ -129,8 +129,8 @@ export function EditorGroup({
               aria-selected={isActive}
               className={`group flex h-9 min-w-0 max-w-[200px] shrink-0 items-center gap-1 border-r border-[var(--vscode-border)] px-2 text-[13px] ${
                 isActive
-                  ? "border-t-2 border-t-[#007fd4] bg-[var(--vscode-editor-bg)] text-[#ffffff]"
-                  : "cursor-pointer bg-[var(--vscode-tab-inactive)] text-[#969696] hover:bg-[#2a2d2e]"
+                  ? "border-t-2 border-t-[#007fd4] bg-[var(--vscode-editor-bg)] text-[var(--vscode-tab-active-fg)]"
+                  : "cursor-pointer bg-[var(--vscode-tab-inactive)] text-[var(--vscode-tab-inactive-fg)] hover:bg-[var(--vscode-list-hover)]"
               }`}
               onClick={() => onSelect(tab.id)}
             >
@@ -140,7 +140,7 @@ export function EditorGroup({
               </span>
               <button
                 type="button"
-                className="ml-0.5 rounded p-0.5 opacity-0 hover:bg-white/10 group-hover:opacity-100"
+                className="ml-0.5 rounded p-0.5 opacity-0 hover:bg-[var(--vscode-menu-hover)] group-hover:opacity-100"
                 aria-label={`Close ${tab.title}`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -155,34 +155,40 @@ export function EditorGroup({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex h-6 shrink-0 items-center gap-2 border-b border-[var(--vscode-border)] px-4 text-[12px] text-[#cccccc] opacity-80">
+        <div className="flex h-6 shrink-0 items-center gap-2 border-b border-[var(--vscode-border)] px-4 text-[12px] text-[var(--vscode-fg)] opacity-80">
           <span className="min-w-0 flex-1 truncate">
             {blogEditor ? (
               <>
                 blog ›{" "}
-                <span className="text-[#e37933]">
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
                   {breadcrumbLabel ?? active?.title ?? "untitled"}
                 </span>
               </>
             ) : workHourView ? (
               <>
-                workhour › <span className="text-[#e37933]">attendance</span>
+                workhour ›{" "}
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
+                  attendance
+                </span>
               </>
             ) : jsonFormatterView ? (
               <>
-                tool › <span className="text-[#e37933]">JSON formatter</span>
+                tool ›{" "}
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
+                  JSON formatter
+                </span>
               </>
             ) : pullRequestView ? (
               <>
                 pull-request ›{" "}
-                <span className="text-[#e37933]">
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
                   {pullRequestBreadcrumbLabel ?? "select a PR"}
                 </span>
               </>
             ) : (
               <>
                 niumer ›{" "}
-                <span className="text-[#e37933]">
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
                   {active?.title ?? "Home"}
                 </span>
               </>
@@ -191,7 +197,7 @@ export function EditorGroup({
           {blogEditor && !showBlogEmpty ? (
             <button
               type="button"
-              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-[#cccccc] opacity-90 hover:bg-white/10 hover:opacity-100"
+              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-[var(--vscode-fg)] opacity-90 hover:bg-[var(--vscode-menu-hover)] hover:opacity-100"
               title={
                 blogPreviewOpen ? "隐藏 Markdown 预览" : "打开 Markdown 预览"
               }
@@ -213,17 +219,17 @@ export function EditorGroup({
           pullRequestPreviewUrl ? (
             <iframe
               title="Pull request preview"
-              className="allow-select min-h-0 min-w-0 flex-1 border-0 bg-[#1e1e1e]"
+              className="allow-select min-h-0 min-w-0 flex-1 border-0 bg-[var(--vscode-editor-bg)]"
               src={pullRequestPreviewUrl}
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
             />
           ) : (
-            <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[#858585]">
+            <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[var(--vscode-fg-muted)]">
               Select a pull request in the sidebar to load its URL in this pane.
             </div>
           )
         ) : showBlogEmpty ? (
-          <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[#858585]">
+          <div className="allow-select flex flex-1 items-center justify-center px-6 text-center text-[13px] text-[var(--vscode-fg-muted)]">
             No open document. Create a new file or open one from the Blog
             explorer.
           </div>
@@ -237,7 +243,7 @@ export function EditorGroup({
             <div className="allow-select flex min-h-0 min-w-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">
               <div
                 ref={gutterRef}
-                className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pl-3 pr-3 text-right text-[#858585]"
+                className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[var(--vscode-gutter-bg)] py-2 pl-3 pr-3 text-right text-[var(--vscode-fg-muted)]"
               >
                 {Array.from({ length: lineCount }, (_, i) => (
                   <div key={i}>{i + 1}</div>
@@ -245,7 +251,7 @@ export function EditorGroup({
               </div>
               <textarea
                 ref={taRef}
-                className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[#1e1e1e] p-2 font-mono text-[13px] leading-6 text-[#d4d4d4] caret-[#aeafad] outline-none focus:ring-0"
+                className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[var(--vscode-editor-bg)] p-2 font-mono text-[13px] leading-6 text-[var(--vscode-editor-fg)] caret-[var(--vscode-caret)] outline-none focus:ring-0"
                 spellCheck={false}
                 value={editorContent}
                 onChange={(e) => onEditorContentChange(e.target.value)}
@@ -268,12 +274,12 @@ export function EditorGroup({
           </div>
         ) : (
           <div className="allow-select flex min-h-0 flex-1 overflow-auto font-mono text-[13px] leading-6">
-            <div className="sticky left-0 shrink-0 select-none border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pl-4 pr-3 text-right text-[#858585]">
+            <div className="sticky left-0 shrink-0 select-none border-r border-[var(--vscode-border)] bg-[var(--vscode-gutter-bg)] py-2 pl-4 pr-3 text-right text-[var(--vscode-fg-muted)]">
               {sampleLines.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}
             </div>
-            <pre className="m-0 flex-1 py-2 pl-4 text-[#d4d4d4]">
+            <pre className="m-0 flex-1 py-2 pl-4 text-[var(--vscode-editor-fg)]">
               <code>
                 {sampleLines.map((line, i) => (
                   <div key={i}>{line || " "}</div>

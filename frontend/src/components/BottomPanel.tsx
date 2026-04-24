@@ -21,7 +21,7 @@ export function BottomPanel({
     return (
       <button
         type="button"
-        className="flex h-6 w-full shrink-0 items-center justify-center border-t border-[var(--vscode-border)] bg-[var(--vscode-panel-bg)] text-[11px] text-[#cccccc] hover:bg-[#2a2d2e]"
+        className="flex h-6 w-full shrink-0 items-center justify-center border-t border-[var(--vscode-border)] bg-[var(--vscode-panel-bg)] text-[11px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-list-hover)]"
         onClick={onToggle}
       >
         ▲ Panel (show)
@@ -40,7 +40,7 @@ export function BottomPanel({
       className="flex shrink-0 flex-col border-t border-[var(--vscode-border)]"
       style={{ height, background: "var(--vscode-panel-bg)" }}
     >
-      <div className="relative flex h-8 shrink-0 items-center gap-3 border-b border-[var(--vscode-border)] px-2 text-[11px] font-bold uppercase tracking-wide text-[#cccccc]">
+      <div className="relative flex h-8 shrink-0 items-center gap-3 border-b border-[var(--vscode-border)] px-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
         <button
           type="button"
           aria-label="Resize panel"
@@ -56,8 +56,8 @@ export function BottomPanel({
             type="button"
             className={`rounded px-2 py-1 ${
               tab === t.id
-                ? "border-b-2 border-[#007fd4] text-white"
-                : "text-[#969696] hover:text-white"
+                ? "border-b-2 border-[#007fd4] text-[var(--vscode-panel-tab-active-fg)]"
+                : "text-[var(--vscode-panel-tab-inactive-fg)] hover:text-[var(--vscode-panel-tab-active-fg)]"
             }`}
             onClick={() => setTab(t.id)}
           >
@@ -67,7 +67,7 @@ export function BottomPanel({
         <div className="ml-auto flex items-center gap-1 pr-1">
           <button
             type="button"
-            className="rounded px-2 py-0.5 hover:bg-white/10"
+            className="rounded px-2 py-0.5 hover:bg-[var(--vscode-menu-hover)]"
             onClick={onToggle}
             aria-label="Hide panel"
           >
@@ -76,29 +76,33 @@ export function BottomPanel({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto p-2 font-mono text-[12px] leading-relaxed text-[#cccccc]">
+      <div className="min-h-0 flex-1 overflow-auto p-2 font-mono text-[12px] leading-relaxed text-[var(--vscode-fg)]">
         {tab === "terminal" && (
           <div>
             <div className="text-[#6a9955]">$ npm run build</div>
-            <div className="text-[#d4d4d4]">
+            <div className="text-[var(--vscode-editor-fg)]">
               &gt; niumer-frontend@0.0.0 build
             </div>
-            <div className="text-[#d4d4d4]">&gt; vite build</div>
+            <div className="text-[var(--vscode-editor-fg)]">&gt; vite build</div>
             <div className="text-[#569cd6]">
               vite v5.x building for production...
             </div>
             <div className="text-[#6a9955]">✓ built in 420ms</div>
             <div className="mt-2 flex items-center gap-1">
-              <span className="text-[#cccccc]">$</span>
+              <span className="text-[var(--vscode-fg)]">$</span>
               <span className="animate-pulse">▌</span>
             </div>
           </div>
         )}
         {tab === "problems" && (
-          <div className="text-[#858585]">No problems have been detected.</div>
+          <div className="text-[var(--vscode-fg-muted)]">
+            No problems have been detected.
+          </div>
         )}
         {tab === "output" && (
-          <div className="text-[#858585]">Output channel is empty.</div>
+          <div className="text-[var(--vscode-fg-muted)]">
+            Output channel is empty.
+          </div>
         )}
       </div>
     </div>

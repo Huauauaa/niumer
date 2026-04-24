@@ -44,13 +44,14 @@ type Props = {
 };
 
 const rowClass =
-  "group flex w-full cursor-pointer items-center gap-1 rounded px-2 py-1 text-left text-[13px] text-[#cccccc] hover:bg-[var(--vscode-list-hover)]";
-const selectedRow = "bg-[#37373d] hover:bg-[#37373d]";
+  "group flex w-full cursor-pointer items-center gap-1 rounded px-2 py-1 text-left text-[13px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-list-hover)]";
+const selectedRow =
+  "bg-[var(--vscode-sidebar-item-selected)] hover:bg-[var(--vscode-sidebar-item-selected)]";
 
 function prStateDotClass(state: PullRequestState): string {
   if (state === "merged") return "text-[#6a9955]";
   if (state === "open") return "text-[#4fc1ff]";
-  return "text-[#858585]";
+  return "text-[var(--vscode-fg-muted)]";
 }
 
 function BlogExplorer({
@@ -119,7 +120,7 @@ function BlogExplorer({
       }}
     >
       <div className="flex shrink-0 items-center justify-between px-2 py-2">
-        <span className="pl-1 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+        <span className="pl-1 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
           Explorer
         </span>
         <div className="flex items-center gap-0.5">
@@ -127,7 +128,7 @@ function BlogExplorer({
             type="button"
             title="New File"
             aria-label="New File"
-            className="rounded p-1 text-[#cccccc] hover:bg-white/10"
+            className="rounded p-1 text-[var(--vscode-fg)] hover:bg-[var(--vscode-menu-hover)]"
             onClick={onNew}
           >
             <svg
@@ -142,13 +143,13 @@ function BlogExplorer({
           </button>
         </div>
       </div>
-      <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-[#858585]">
+      <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg-muted)]">
         Blog
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         <ul className="flex flex-col gap-px">
           {documents.length === 0 ? (
-            <li className="px-2 py-2 text-[12px] text-[#858585]">
+            <li className="px-2 py-2 text-[12px] text-[var(--vscode-fg-muted)]">
               No files yet. Click New File.
             </li>
           ) : (
@@ -181,7 +182,7 @@ function BlogExplorer({
                         <input
                           ref={inputRef}
                           type="text"
-                          className="allow-select min-w-0 flex-1 rounded border border-[#007fd4] bg-[#3c3c3c] px-1 py-0.5 font-mono text-[12px] text-[#cccccc] outline-none"
+                          className="allow-select min-w-0 flex-1 rounded border border-[#007fd4] bg-[var(--vscode-input-bg)] px-1 py-0.5 font-mono text-[12px] text-[var(--vscode-fg)] outline-none"
                           value={draft}
                           onChange={(e) => setDraft(e.target.value)}
                           onKeyDown={(e) => {
@@ -198,7 +199,7 @@ function BlogExplorer({
                         <button
                           type="button"
                           title="Apply rename"
-                          className="shrink-0 rounded px-1 py-0.5 text-[11px] text-[#cccccc] hover:bg-white/15"
+                          className="shrink-0 rounded px-1 py-0.5 text-[11px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-menu-hover)]"
                           onClick={() => void commitRename(doc.fileName)}
                         >
                           ✓
@@ -224,7 +225,7 @@ function BlogExplorer({
                         <button
                           type="button"
                           title="Rename (or F2 when Explorer is focused)"
-                          className="shrink-0 rounded p-0.5 opacity-0 hover:bg-white/15 group-hover:opacity-100"
+                          className="shrink-0 rounded p-0.5 opacity-0 hover:bg-[var(--vscode-menu-hover)] group-hover:opacity-100"
                           aria-label={`Rename ${doc.title}`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -237,7 +238,7 @@ function BlogExplorer({
                             height="14"
                             viewBox="0 0 24 24"
                             fill="currentColor"
-                            className="text-[#858585] hover:text-[#cccccc]"
+                            className="text-[var(--vscode-fg-muted)] hover:text-[var(--vscode-fg-heading)]"
                             aria-hidden
                           >
                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
@@ -246,7 +247,7 @@ function BlogExplorer({
                         <button
                           type="button"
                           title={`Delete ${doc.title}`}
-                          className="shrink-0 rounded p-0.5 opacity-0 hover:bg-white/15 group-hover:opacity-100"
+                          className="shrink-0 rounded p-0.5 opacity-0 hover:bg-[var(--vscode-menu-hover)] group-hover:opacity-100"
                           aria-label={`Delete ${doc.title}`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -258,7 +259,7 @@ function BlogExplorer({
                             height="14"
                             viewBox="0 0 24 24"
                             fill="currentColor"
-                            className="text-[#858585] hover:text-[#cccccc]"
+                            className="text-[var(--vscode-fg-muted)] hover:text-[var(--vscode-fg-heading)]"
                           >
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                           </svg>
@@ -318,7 +319,7 @@ function SidebarBody({
   if (activity === "tool") {
     return (
       <div className="flex flex-col">
-        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
           Tool
         </div>
         <div className="flex flex-col gap-0.5 px-1 pb-2">
@@ -334,22 +335,22 @@ function SidebarBody({
   if (activity === "pullRequest") {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
           Pull Request
         </div>
         <div className="allow-select min-h-0 flex-1 overflow-y-auto px-1 pb-1">
           {pullRequestLoading ? (
-            <div className="px-2 py-2 text-[12px] text-[#858585]">Loading…</div>
+            <div className="px-2 py-2 text-[12px] text-[var(--vscode-fg-muted)]">Loading…</div>
           ) : pullRequestError ? (
             <div className="px-2 py-2 text-[12px] leading-snug text-[#f48771]">
               {pullRequestError}
-              <div className="mt-1 text-[11px] text-[#858585]">
+              <div className="mt-1 text-[11px] text-[var(--vscode-fg-muted)]">
                 Start mockserver:{" "}
                 <code className="font-mono">go run ./cmd/mockserver</code>
               </div>
             </div>
           ) : pullRequestItems.length === 0 ? (
-            <div className="px-2 py-2 text-[12px] text-[#858585]">
+            <div className="px-2 py-2 text-[12px] text-[var(--vscode-fg-muted)]">
               No items.
             </div>
           ) : (
@@ -374,7 +375,7 @@ function SidebarBody({
                           #{pr.number} {pr.title}
                         </span>
                       </div>
-                      <div className="truncate pl-3 text-[11px] text-[#858585]">
+                      <div className="truncate pl-3 text-[11px] text-[var(--vscode-fg-muted)]">
                         {pr.author} ·{" "}
                         <span className="font-mono text-[#b5cea8]">
                           {pr.sourceBranch}
@@ -392,10 +393,10 @@ function SidebarBody({
           )}
         </div>
         <div className="shrink-0 border-t border-[var(--vscode-border)] px-2 py-2">
-          <div className="flex items-center justify-between gap-1 text-[11px] text-[#858585]">
+          <div className="flex items-center justify-between gap-1 text-[11px] text-[var(--vscode-fg-muted)]">
             <button
               type="button"
-              className="rounded px-1.5 py-0.5 hover:bg-white/10 disabled:opacity-40"
+              className="rounded px-1.5 py-0.5 hover:bg-[var(--vscode-menu-hover)] disabled:opacity-40"
               disabled={pullRequestLoading || pullRequestPage <= 1}
               onClick={() => onPullRequestPageChange?.(pullRequestPage - 1)}
             >
@@ -406,7 +407,7 @@ function SidebarBody({
             </span>
             <button
               type="button"
-              className="rounded px-1.5 py-0.5 hover:bg-white/10 disabled:opacity-40"
+              className="rounded px-1.5 py-0.5 hover:bg-[var(--vscode-menu-hover)] disabled:opacity-40"
               disabled={
                 pullRequestLoading || pullRequestPage >= pullRequestTotalPages
               }
@@ -423,7 +424,7 @@ function SidebarBody({
   if (activity === "reminder") {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
           提醒
         </div>
         {onReminderAdd &&
@@ -445,13 +446,13 @@ function SidebarBody({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#bbbbbb]">
+      <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
         Workhour
       </div>
-      <div className="allow-select min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 text-[13px] text-[#cccccc]">
+      <div className="allow-select min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 text-[13px] text-[var(--vscode-fg)]">
         <div className="flex flex-wrap items-end gap-x-8 gap-y-2">
           <div>
-            <div className="mb-1 text-[11px] uppercase text-[#858585]">
+            <div className="mb-1 text-[11px] uppercase text-[var(--vscode-fg-muted)]">
               总工时
             </div>
             <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
@@ -461,7 +462,7 @@ function SidebarBody({
             </div>
           </div>
           <div>
-            <div className="mb-1 text-[11px] uppercase text-[#858585]">
+            <div className="mb-1 text-[11px] uppercase text-[var(--vscode-fg-muted)]">
               加班
             </div>
             <div className="font-mono text-[18px] font-semibold tabular-nums text-[#e37933]">
@@ -472,15 +473,15 @@ function SidebarBody({
           </div>
         </div>
         <div>
-          <div className="mb-1.5 text-[11px] uppercase text-[#858585]">
+          <div className="mb-1.5 text-[11px] uppercase text-[var(--vscode-fg-muted)]">
             作息
           </div>
           {workHourShiftNameZh.trim() !== "" ? (
-            <p className="allow-select break-words font-mono text-[11px] leading-relaxed text-[#858585]">
+            <p className="allow-select break-words font-mono text-[11px] leading-relaxed text-[var(--vscode-fg-muted)]">
               {workHourShiftNameZh}
             </p>
           ) : (
-            <p className="text-[12px] leading-relaxed text-[#858585]">
+            <p className="text-[12px] leading-relaxed text-[var(--vscode-fg-muted)]">
               在主区域刷新考勤后，将显示「user-info」接口中的班次说明（shiftNameZh）。
             </p>
           )}

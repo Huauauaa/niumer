@@ -43,15 +43,19 @@ export function ActivityBar({ active, onChange }: Props) {
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
             onClick={() => onChange(id)}
-            className="relative flex h-12 w-12 items-center justify-center text-[#858585] hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+            className="relative flex h-12 w-12 items-center justify-center text-[var(--vscode-activity-fg)] hover:text-[var(--vscode-activity-fg-hover)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--vscode-focus-ring)]"
           >
             {isActive && (
               <span
-                className="absolute left-0 top-2 h-8 w-0.5 rounded-r bg-white"
+                className="absolute left-0 top-2 h-8 w-0.5 rounded-r bg-[var(--vscode-activity-indicator)]"
                 aria-hidden
               />
             )}
-            <Icon className={isActive ? "text-white" : undefined} />
+            <Icon
+              className={
+                isActive ? "text-[var(--vscode-activity-fg-active)]" : undefined
+              }
+            />
           </button>
         );
       })}

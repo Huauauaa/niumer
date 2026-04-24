@@ -589,7 +589,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#1e1e1e]">
+    <div className="flex h-full flex-col bg-[var(--vscode-editor-bg)]">
       <MenuBar
         onOpenPreference={() => setPrefsOpen(true)}
         onOpenUserInfo={() => setUserInfoOpen(true)}

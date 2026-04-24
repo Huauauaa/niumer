@@ -62,40 +62,40 @@ export function UserInfoDialog({ open, onClose }: Props) {
       }}
     >
       <div
-        className="max-h-[min(100%-2rem,90vh)] w-[min(100%-2rem,480px)] overflow-y-auto rounded border border-[var(--vscode-border)] bg-[#252526] p-4 shadow-xl"
+        className="max-h-[min(100%-2rem,90vh)] w-[min(100%-2rem,480px)] overflow-y-auto rounded border border-[var(--vscode-border)] bg-[var(--vscode-dialog-bg)] p-4 shadow-xl"
         role="dialog"
         aria-labelledby="userinfo-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <h2
           id="userinfo-title"
-          className="m-0 mb-3 text-[13px] font-semibold text-[#cccccc]"
+          className="m-0 mb-3 text-[13px] font-semibold text-[var(--vscode-fg)]"
         >
-          User info
+          Profile
         </h2>
         {loading && (
-          <p className="mb-3 text-[12px] text-[#858585]">正在加载…</p>
+          <p className="mb-3 text-[12px] text-[var(--vscode-fg-muted)]">正在加载…</p>
         )}
         {err && (
           <p className="mb-3 text-[12px] text-[#f48771]">{err}</p>
         )}
         {hasUserCache && !loading && profile && (
-          <dl className="mb-3 grid max-w-lg grid-cols-[7.5rem_1fr] gap-x-2 gap-y-1.5 text-[12px] text-[#cccccc]">
-            <dt className="text-[#858585]">Account</dt>
+          <dl className="mb-3 grid max-w-lg grid-cols-[7.5rem_1fr] gap-x-2 gap-y-1.5 text-[12px] text-[var(--vscode-fg)]">
+            <dt className="text-[var(--vscode-fg-muted)]">Account</dt>
             <dd className="m-0 font-mono">{profile.userAccount || "—"}</dd>
-            <dt className="text-[#858585]">Department</dt>
-            <dd className="m-0 break-words text-[#cccccc]">{department}</dd>
-            <dt className="text-[#858585]">Supplier</dt>
-            <dd className="m-0 break-words text-[#cccccc]">{supplier}</dd>
+            <dt className="text-[var(--vscode-fg-muted)]">Department</dt>
+            <dd className="m-0 break-words text-[var(--vscode-fg)]">{department}</dd>
+            <dt className="text-[var(--vscode-fg-muted)]">Supplier</dt>
+            <dd className="m-0 break-words text-[var(--vscode-fg)]">{supplier}</dd>
           </dl>
         )}
         {!loading && !hasUserCache && !err && (
-          <p className="mb-3 text-[12px] text-[#858585]">暂无数据</p>
+          <p className="mb-3 text-[12px] text-[var(--vscode-fg-muted)]">暂无数据</p>
         )}
         <div className="mt-4 flex justify-end">
           <button
             type="button"
-            className="rounded px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-white/10"
+            className="rounded px-3 py-1.5 text-[12px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-menu-hover)]"
             onClick={onClose}
           >
             关闭

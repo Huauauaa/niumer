@@ -14,6 +14,65 @@
   --vscode-titleBar-bg: #323233;
   --vscode-list-hover: #2a2d2e;
   --vscode-selection: #264f78;
+  --vscode-fg: #cccccc;
+  --vscode-fg-muted: #858585;
+  --vscode-fg-heading: #e1e4e8;
+  --vscode-input-bg: #3c3c3c;
+  --vscode-button-hover: #454545;
+  --vscode-tab-row-bg: #252526;
+  --vscode-tab-active-fg: #ffffff;
+  --vscode-tab-inactive-fg: #969696;
+  --vscode-gutter-bg: #1e1e1e;
+  --vscode-dialog-bg: #252526;
+  --vscode-editor-fg: #d4d4d4;
+  --vscode-caret: #aeafad;
+  --vscode-activity-fg: #858585;
+  --vscode-activity-fg-hover: #ffffff;
+  --vscode-activity-fg-active: #ffffff;
+  --vscode-activity-indicator: #ffffff;
+  --vscode-panel-tab-active-fg: #ffffff;
+  --vscode-panel-tab-inactive-fg: #969696;
+  --vscode-menu-hover: rgba(255, 255, 255, 0.1);
+  --vscode-focus-ring: rgba(255, 255, 255, 0.3);
+  --vscode-breadcrumb-accent: #e37933;
+  --vscode-sidebar-item-selected: #37373d;
+}
+
+html[data-theme="light"] {
+  --vscode-editor-bg: #ffffff;
+  --vscode-sideBar-bg: #f3f3f3;
+  --vscode-activityBar-bg: #f3f3f3;
+  --vscode-tab-inactive: #ececec;
+  --vscode-border: #c8c8c8;
+  --vscode-panel-bg: #f3f3f3;
+  --vscode-statusBar-bg: #007acc;
+  --vscode-menuBar-bg: #e8e8e8;
+  --vscode-titleBar-bg: #e8e8e8;
+  --vscode-list-hover: #e4e4e4;
+  --vscode-selection: #add6ff;
+  --vscode-fg: #242424;
+  --vscode-fg-muted: #616161;
+  --vscode-fg-heading: #1a1a1a;
+  --vscode-input-bg: #ffffff;
+  --vscode-button-hover: #e0e0e0;
+  --vscode-tab-row-bg: #f3f3f3;
+  --vscode-tab-active-fg: #1a1a1a;
+  --vscode-tab-inactive-fg: #5a5a5a;
+  --vscode-gutter-bg: #f5f5f5;
+  --vscode-dialog-bg: #f9f9f9;
+  --vscode-editor-fg: #242424;
+  --vscode-caret: #242424;
+  --vscode-activity-fg: #656565;
+  --vscode-activity-fg-hover: #007acc;
+  --vscode-activity-fg-active: #007acc;
+  --vscode-activity-indicator: #007acc;
+  --vscode-panel-tab-active-fg: #1a1a1a;
+  --vscode-panel-tab-inactive-fg: #5a5a5a;
+  --vscode-menu-hover: rgba(0, 0, 0, 0.06);
+  --vscode-focus-ring: rgba(0, 0, 0, 0.2);
+  --vscode-breadcrumb-accent: #c2410c;
+  /* List selection: light blue tint so text stays dark and readable */
+  --vscode-sidebar-item-selected: #cce4f7;
 }
 
 html,
@@ -26,7 +85,7 @@ body,
 body {
   margin: 0;
   background: var(--vscode-editor-bg);
-  color: #cccccc;
+  color: var(--vscode-fg);
   font-size: 13px;
   user-select: none;
 }
@@ -45,7 +104,7 @@ body {
   max-width: 980px;
   margin: 0 auto;
   padding: 12px 26px 48px;
-  color: #cccccc;
+  color: var(--vscode-fg);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui,
     "Ubuntu", "Droid Sans", sans-serif;
@@ -72,7 +131,7 @@ body {
   margin-bottom: 0.45em;
   font-weight: 600;
   line-height: 1.25;
-  color: #e1e4e8;
+  color: var(--vscode-fg-heading);
 }
 
 .vscode-markdown-body h1 {
@@ -111,7 +170,7 @@ body {
 
 .vscode-markdown-body strong {
   font-weight: 600;
-  color: #e1e4e8;
+  color: var(--vscode-fg-heading);
 }
 
 .vscode-markdown-body ul,
@@ -132,8 +191,8 @@ body {
 .vscode-markdown-body blockquote {
   margin: 0 0 0.85em;
   padding: 0 0 0 0.9em;
-  color: #858585;
-  border-left: 4px solid #3c3c3c;
+  color: var(--vscode-fg-muted);
+  border-left: 4px solid var(--vscode-border);
 }
 
 .vscode-markdown-body hr {
@@ -160,8 +219,8 @@ body {
   overflow: auto;
   font-size: 13px;
   line-height: 1.45;
-  color: #d4d4d4;
-  background: #1e1e1e;
+  color: var(--vscode-editor-fg);
+  background: var(--vscode-gutter-bg);
   border: 1px solid var(--vscode-border);
   border-radius: 4px;
 }
@@ -189,7 +248,7 @@ body {
 
 .vscode-markdown-body th {
   font-weight: 600;
-  color: #e1e4e8;
+  color: var(--vscode-fg-heading);
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -215,4 +274,49 @@ body {
 .vscode-markdown-body .task-list-item {
   list-style: none;
   margin-left: 0;
+}
+
+html[data-theme="light"] .vscode-markdown-body {
+  color: var(--vscode-fg);
+}
+
+html[data-theme="light"] .vscode-markdown-body h1,
+html[data-theme="light"] .vscode-markdown-body h2,
+html[data-theme="light"] .vscode-markdown-body h3,
+html[data-theme="light"] .vscode-markdown-body h4,
+html[data-theme="light"] .vscode-markdown-body h5,
+html[data-theme="light"] .vscode-markdown-body h6 {
+  color: var(--vscode-fg-heading);
+}
+
+html[data-theme="light"] .vscode-markdown-body strong {
+  color: var(--vscode-fg-heading);
+}
+
+html[data-theme="light"] .vscode-markdown-body a {
+  color: #0066bf;
+}
+
+html[data-theme="light"] .vscode-markdown-body blockquote {
+  color: var(--vscode-fg-muted);
+  border-left-color: var(--vscode-border);
+}
+
+html[data-theme="light"] .vscode-markdown-body code {
+  color: #a31545;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .vscode-markdown-body pre {
+  color: var(--vscode-editor-fg);
+  background: var(--vscode-gutter-bg);
+}
+
+html[data-theme="light"] .vscode-markdown-body th {
+  color: var(--vscode-fg-heading);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="light"] .vscode-markdown-body tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.02);
 }

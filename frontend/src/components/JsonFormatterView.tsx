@@ -36,7 +36,7 @@ export function JsonFormatterView({ value, onChange }: Props) {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <div className="flex shrink-0 items-center justify-end gap-4 border-b border-[var(--vscode-border)] bg-[#1e1e1e] px-4 py-1.5">
+      <div className="flex shrink-0 items-center justify-end gap-4 border-b border-[var(--vscode-border)] bg-[var(--vscode-editor-bg)] px-4 py-1.5">
         <button
           type="button"
           className="text-[13px] text-[#3794ff] hover:underline"
@@ -46,7 +46,7 @@ export function JsonFormatterView({ value, onChange }: Props) {
         </button>
         <button
           type="button"
-          className="text-[13px] text-[#cccccc] hover:text-white hover:underline"
+          className="text-[13px] text-[var(--vscode-fg)] hover:text-[var(--vscode-tab-active-fg)] hover:underline"
           onClick={() => applyFormatted(false)}
         >
           Minify
@@ -60,7 +60,7 @@ export function JsonFormatterView({ value, onChange }: Props) {
       <div className="allow-select flex min-h-0 flex-1 overflow-hidden font-mono text-[13px] leading-[22px]">
         <div
           ref={gutterRef}
-          className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[#1e1e1e] py-2 pl-3 pr-3 text-right text-[#858585]"
+          className="min-w-[3rem] shrink-0 select-none overflow-y-auto overflow-x-hidden border-r border-[var(--vscode-border)] bg-[var(--vscode-gutter-bg)] py-2 pl-3 pr-3 text-right text-[var(--vscode-fg-muted)]"
         >
           {Array.from({ length: lineCount }, (_, i) => (
             <div key={i}>{i + 1}</div>
@@ -68,7 +68,7 @@ export function JsonFormatterView({ value, onChange }: Props) {
         </div>
         <textarea
           ref={taRef}
-          className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[#1e1e1e] p-2 font-mono text-[13px] leading-[22px] text-[#d4d4d4] caret-[#aeafad] outline-none focus:ring-0"
+          className="min-h-0 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-[var(--vscode-editor-bg)] p-2 font-mono text-[13px] leading-[22px] text-[var(--vscode-editor-fg)] caret-[var(--vscode-caret)] outline-none focus:ring-0"
           spellCheck={false}
           value={value}
           onChange={(e) => {

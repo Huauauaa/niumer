@@ -20,14 +20,15 @@ const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const cx = {
   sectionHead:
-    "mb-2 text-[11px] uppercase tracking-wide text-[#858585]",
+    "mb-2 text-[11px] uppercase tracking-wide text-[var(--vscode-fg-muted)]",
   refreshBtn:
-    "shrink-0 rounded border border-[var(--vscode-border)] bg-[#3c3c3c] px-3 py-1.5 text-[12px] text-[#cccccc] hover:bg-[#454545] disabled:cursor-not-allowed disabled:opacity-50",
-  panel: "mb-5 rounded border border-[var(--vscode-border)] bg-[#252526] px-3 py-3",
-  body: "allow-select min-h-0 flex-1 overflow-auto px-4 py-4 text-[#cccccc]",
-  prose: "text-[15px] leading-relaxed text-[#e1e4e8]",
-  muted: "text-[12px] leading-relaxed text-[#858585]",
-  accentNum: "tabular-nums text-[#e37933]",
+    "shrink-0 rounded border border-[var(--vscode-border)] bg-[var(--vscode-input-bg)] px-3 py-1.5 text-[12px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-button-hover)] disabled:cursor-not-allowed disabled:opacity-50",
+  panel:
+    "mb-5 rounded border border-[var(--vscode-border)] bg-[var(--vscode-dialog-bg)] px-3 py-3",
+  body: "allow-select min-h-0 flex-1 overflow-auto px-4 py-4 text-[var(--vscode-fg)]",
+  prose: "text-[15px] leading-relaxed text-[var(--vscode-fg-heading)]",
+  muted: "text-[12px] leading-relaxed text-[var(--vscode-fg-muted)]",
+  accentNum: "tabular-nums text-[var(--vscode-breadcrumb-accent)]",
 } as const;
 
 type Props = {
@@ -90,7 +91,7 @@ function PersonalCountdownLine({ row }: { row: PersonalRow }) {
       <p className={cx.prose}>
         距离「{row.name}」还有 <span className={cx.accentNum}>{row.days}</span>{" "}
         天。
-        <span className="mt-1 block font-mono text-[11px] font-normal text-[#858585]">
+        <span className="mt-1 block font-mono text-[11px] font-normal text-[var(--vscode-fg-muted)]">
           目标日 {row.date}
         </span>
       </p>
@@ -188,7 +189,7 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
       ) : null}
       <div className={cx.body}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="min-w-0 flex-1 text-[11px] text-[#858585]">
+          <p className="min-w-0 flex-1 text-[11px] text-[var(--vscode-fg-muted)]">
             {sourceCaption}
           </p>
           <button
@@ -202,7 +203,7 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
         </div>
 
         <div className={cx.panel}>
-          <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-[#858585]">
+          <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg-muted)]">
             我的倒计时
           </div>
           {personalRows.length === 0 ? (
@@ -238,23 +239,23 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
         <div className={cx.sectionHead}>后续假期（参考）</div>
         <div className="min-h-0 overflow-auto rounded border border-[var(--vscode-border)]">
           <table className="w-max min-w-full border-collapse text-left text-[12px]">
-            <thead className="sticky top-0 z-[1] bg-[#252526] text-[#cccccc]">
+            <thead className="sticky top-0 z-[1] bg-[var(--vscode-sideBar-bg)] text-[var(--vscode-fg)]">
               <tr>
-                <th className="whitespace-nowrap border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[#858585]">
+                <th className="whitespace-nowrap border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[var(--vscode-fg-muted)]">
                   节日
                 </th>
-                <th className="whitespace-nowrap border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[#858585]">
+                <th className="whitespace-nowrap border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[var(--vscode-fg-muted)]">
                   放假区间
                 </th>
-                <th className="whitespace-nowrap border-b border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[#858585]">
+                <th className="whitespace-nowrap border-b border-[var(--vscode-border)] px-2 py-1.5 font-normal text-[var(--vscode-fg-muted)]">
                   距开始（天）
                 </th>
               </tr>
             </thead>
-            <tbody className="text-[#d4d4d4]">
+            <tbody className="text-[var(--vscode-editor-fg)]">
               {table.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-6 text-[#858585]">
+                  <td colSpan={3} className="px-4 py-6 text-[var(--vscode-fg-muted)]">
                     暂无后续条目。
                   </td>
                 </tr>
@@ -262,7 +263,7 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
                 table.map(({ period, daysUntil }) => (
                   <tr
                     key={`${period.name}-${period.start}`}
-                    className="hover:bg-[#2a2d2e]"
+                    className="hover:bg-[var(--vscode-list-hover)]"
                   >
                     <td className="border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-mono text-[11px]">
                       {period.name}
@@ -270,7 +271,7 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
                     <td className="border-b border-r border-[var(--vscode-border)] px-2 py-1.5 font-mono text-[11px]">
                       {formatRangeCN(period)}
                     </td>
-                    <td className="border-b border-[var(--vscode-border)] px-2 py-1.5 font-mono text-[11px] tabular-nums text-[#e37933]">
+                    <td className="border-b border-[var(--vscode-border)] px-2 py-1.5 font-mono text-[11px] tabular-nums text-[var(--vscode-breadcrumb-accent)]">
                       {daysUntil}
                     </td>
                   </tr>
@@ -279,7 +280,7 @@ export function HolidayReminderView({ customReminders = [] }: Props) {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-[11px] leading-relaxed text-[#858585]">
+        <p className="mt-4 text-[11px] leading-relaxed text-[var(--vscode-fg-muted)]">
           在线数据来自开源项目{" "}
           <a
             className="text-[#3794ff] hover:underline"
