@@ -11,6 +11,7 @@
 //	export WORK_HOUR_TENANT_URL=http://127.0.0.1:17890/id
 //	export WORK_HOUR_USER_INFO_URL=http://127.0.0.1:17890/user-info
 //	export WORK_HOUR_WORKHOUR_URL=http://127.0.0.1:17890/work-hour
+//	export PULL_REQUEST_LIST_URL=http://127.0.0.1:17890/pull-request
 package main
 
 import (

@@ -24,6 +24,7 @@ import {
   ListCustomReminders,
   ReadBlogFile,
   ReadJsonFormatterDraft,
+  RefreshPullRequestList,
   RefreshWorkHourData,
   RenameBlogFile,
   UpdateCustomReminder,
@@ -33,7 +34,6 @@ import {
 import type { CustomReminder } from "./types/reminder";
 import type { AttendanceRecord } from "./types/workhour";
 import type { PullRequestListItem } from "./types/pullRequest";
-import { fetchPullRequests } from "./api/pullRequest";
 import {
   clearLegacyCustomReminders,
   hasReminderSqliteMigrationDone,
@@ -333,14 +333,15 @@ export default function App() {
     let alive = true;
     setPrLoading(true);
     setPrError(null);
-    void fetchPullRequests(prPage, PR_LIST_PAGE_SIZE)
+    void RefreshPullRequestList(prPage, PR_LIST_PAGE_SIZE)
       .then((res) => {
         if (!alive) return;
-        setPrItems(res.items);
+        const items = res.items as unknown as PullRequestListItem[];
+        setPrItems(items);
         setPrTotalPages(Math.max(1, res.totalPages));
         setPrSelected((cur) => {
           if (!cur) return null;
-          return res.items.find((x) => x.number === cur.number) ?? null;
+          return items.find((x) => x.number === cur.number) ?? null;
         });
       })
       .catch((e) => {

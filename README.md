@@ -39,7 +39,7 @@ wails dev
 
 `wails dev` 会安装前端依赖、启动 Vite 开发服务并启动桌面窗口。
 
-**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。前端 **Pull Request** 活动栏会从 `GET /pull-request` 拉分页列表；选中项在右侧用 iframe 打开该项的 `url`（一般为同机 `GET /pr-preview/{id}` 页面）。可通过环境变量 **`VITE_PULL_REQUEST_API_BASE`** 指向其他基地址。
+**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。`configs/config.yaml` 中 `workhour` 的 URL 与 `pull_request_list_url` 可指向该 mock（同 `workhour_url` 模式）。**Pull Request** 列表由 Go **`RefreshPullRequestList`** 使用与考勤相同的浏览器 Cookie 请求 `pull_request_list_url`（可 **`PULL_REQUEST_LIST_URL` 环境变量**覆盖）；**Pull Request** 活动栏使用返回数据；右侧 iframe 打开选中项的 `url`（mock 下为同机 `GET /pr-preview/{id}` 页面）。需先让应用在启动时完成考勤登录/tenant/user-info，以便带 Cookie 访问上述 GET。
 
 ### Makefile 快捷命令
 
@@ -90,6 +90,7 @@ npm run dev
 - `WORK_HOUR_LOGIN_URL`、`WORK_HOUR_WAIT_CSS`
 - `WORK_HOUR_CHROME_PATH`（Chrome/Chromium 可执行文件路径）
 - `WORK_HOUR_TENANT_URL`、`WORK_HOUR_USER_INFO_URL`（考勤 **user-info** 接口 URL，默认 `…/user-info`）、`WORK_HOUR_WORKHOUR_URL`（考勤明细列表接口，对应 YAML `workhour_url`）
+- `PULL_REQUEST_LIST_URL`：Pull Request 列表 HTTP **GET** URL（query：`page`、`page_size`；与 `workhour_url` 同会话 Cookie；对应 YAML `pull_request_list_url`）。本地可与 mockserver 一致：`http://127.0.0.1:17890/pull-request`（`go run ./cmd/mockserver` 后，先完成考勤启动流程再打开 PR 页，以便带上 Cookie）
 
 首次克隆或新增依赖后，在项目根执行：`make tidy` 或 `go mod tidy`。
 

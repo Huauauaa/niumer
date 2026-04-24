@@ -25,7 +25,7 @@ type Props = {
   workHourOvertimeHours?: number;
   /** 来自 /user-info 的 data.shiftInformationDTO.shiftNameZh（刷新考勤后更新） */
   workHourShiftNameZh?: string;
-  /** Pull Request list (activity === pullRequest); from mockserver GET /pull-request */
+  /** Pull Request list (activity === pullRequest); Go RefreshPullRequestList (configs pull_request_list_url) */
   pullRequestItems?: PullRequestListItem[];
   pullRequestPage?: number;
   pullRequestTotalPages?: number;

@@ -63,6 +63,24 @@ func postJSON(ctx context.Context, client *http.Client, url string, body any, co
 	return b, resp.StatusCode, nil
 }
 
+func getWithCookies(ctx context.Context, client *http.Client, u string, cookies map[string]string) ([]byte, int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	addCookies(req, cookies)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, err
+	}
+	return b, resp.StatusCode, nil
+}
+
 type tenantResp struct {
 	Data *struct {
 		Tenant *struct {

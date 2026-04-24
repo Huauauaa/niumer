@@ -90,6 +90,10 @@ export function ReadJsonFormatterDraft() {
   return window['go']['main']['App']['ReadJsonFormatterDraft']();
 }
 
+export function RefreshPullRequestList(arg1, arg2) {
+  return window['go']['main']['App']['RefreshPullRequestList'](arg1, arg2);
+}
+
 export function RefreshWorkHourData() {
   return window['go']['main']['App']['RefreshWorkHourData']();
 }

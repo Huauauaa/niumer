@@ -18,6 +18,7 @@ type App struct {
 	workHourEffWindows []workHourTimeWindow
 
 	// 考勤：启动后 chromedp 写入 Cookie，再 tenant + user-info；进入工时页仅用 Cookie 调 workhour_url。
+	// PR 列表：同 Cookie GET pull_request_list_url（与 mockserver / 生产端一致）。
 	muWorkHourAuth       sync.RWMutex
 	workHourCookies      map[string]string
 	workHourHrID         int64

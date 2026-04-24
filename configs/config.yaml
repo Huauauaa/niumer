@@ -9,3 +9,5 @@ workhour:
   # POST /user-info (envelope: status, data.hrId, shiftNameZh, ok).
   user_info_url: "http://127.0.0.1:17890/user-info"
   workhour_url: "http://127.0.0.1:17890/work-hour"
+  # GET with ?page=&page_size=; local mock: cmd/mockserver GET /pull-request
+  pull_request_list_url: "http://127.0.0.1:17890/pull-request"
