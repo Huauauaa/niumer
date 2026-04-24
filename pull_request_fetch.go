@@ -92,8 +92,7 @@ func (a *App) RefreshPullRequestList(page, pageSize int) (PullRequestListRespons
 	u.RawQuery = q.Encode()
 
 	client := workHourHTTPClient()
-	cookies := a.workHourCookiesForHTTP()
-	raw, code, err := getWithCookies(ctx, client, u.String(), cookies)
+	raw, code, err := a.workHourGet(ctx, client, u.String())
 	if err != nil {
 		return zero, err
 	}

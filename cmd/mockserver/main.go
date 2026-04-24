@@ -118,20 +118,71 @@ func handleUserInfo(w http.ResponseWriter, r *http.Request) {
 			hrID = int64(len(eq))*1000 + 42
 		}
 	}
-	// Same shape as real /user-info: hrId may be string or number in production.
+	hrIdStr := strconv.FormatInt(hrID, 10)
+	// 与线上一致：hrId 可为 string；全量 data 供 SQLite userInfoJson 与联调阅读。
+	// 敏感位用 ****** 占位，hrId 必为可解析数字串（niumer 会转成 int64）。
+	shiftNameZh := "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30,Card: 05:00-04:59"
 	writeJSON(w, http.StatusOK, map[string]any{
 		"status":      200,
 		"messageCode": "attendance.response.ok",
 		"messageText": "Success",
 		"ok":          true,
 		"data": map[string]any{
-			"hrId":             strconv.FormatInt(hrID, 10),
-			"attendanceScheme": "MOCK",
-			"departmentDTO":    map[string]any{"departmentChineseName": "Mock Dept"},
-			"shiftInformationDTO": map[string]any{
-				"shiftNameZh": "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30,Card: 05:00-04:59",
+			"hrId":             hrIdStr,
+			"attendanceScheme": "CNEX",
+			"departmentDTO": map[string]any{
+				"departmentCode":          "******",
+				"departmentEnglishName":  "Cloud Infrastructure Platform Dept",
+				"departmentChineseName":  "云基础设施平台部",
+				"orgList": []any{
+					"******", "******", "******",
+				},
+				"level":          nil,
+				"employeeCount":  nil,
+				"isConvolution": true,
 			},
-			"isTopmanager": false,
+			"shiftInformationDTO": map[string]any{
+				"shiftId":   15,
+				"shiftCode": "FLXF",
+				"shiftName":  "班次编码:FLXF,服务起止时间:08:00-17:30,必须在岗时间:09:00-17:30,取卡时间:05:00-04:59",
+				"shiftNameZh":  shiftNameZh,
+				"shiftNameEn":  "China/Flex,Work:08:00-17:30,Rest 12:00-13:30/17:30-18:00,Core :09:00-17:30,Card: 05:00-04:59",
+				"shiftCountryCode":          "CN",
+				"shiftDuration":            8,
+				"standardStartTime":        "08:00",
+				"standardEndTime":         "17:30",
+				"workCoreTimeStart":        "09:00",
+				"workCoreTimeEnd":         "17:30",
+				"shiftEffectiveTimeStart":  "05:00",
+				"shiftEffectiveTimeEnd":   "04:59",
+				"restStartTime":           "12:00",
+				"restEndTime":            "13:30",
+				"restStartTimeTwo":         nil,
+				"restEndTimeTwo":           nil,
+				"freeCard":                 nil,
+				"scheduling":               false,
+				"shiftType":                "弹性班次",
+				"shiftTypeCode":            "1",
+				"flexible":                 nil,
+				"workCalendarName":         "中国大陆假期日历",
+				"brushCardTypeId":         2,
+				"brushCardTypeName":        "固定办公打卡",
+				"brushCardTypeCode":        "No",
+				"holidayCalenderId":        "55",
+				"workCalendarCode":         "HW1_Chinese Mainland Holiday Calendar",
+				"workTimeEffectiveStartDate": "2026-04-01",
+				"workTimeEffectiveEndDate":   "2199-12-31",
+				"shiftBreakTime":           nil,
+			},
+			"isTopmanager":        false,
+			"isAppointManager":    false,
+			"isManagerPilotDept":  false,
+			"supplierCode":        "******",
+			"supplier":            "北京外企德科人力资源服务上海有限公司",
+			"personWorkType":     "2040",
+			"personWorkTypeName":  "在场人力服务外包",
+			"personWorkSubType":  "204003",
+			"personWorkSubTypeName": "研发OD在场",
 		},
 	})
 }

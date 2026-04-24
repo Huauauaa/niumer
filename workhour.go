@@ -84,9 +84,24 @@ CREATE TABLE IF NOT EXISTS workhour_user_profile (
     userAccount TEXT,
     hrId INTEGER NOT NULL DEFAULT 0,
     shiftNameZh TEXT,
+    userInfoJson TEXT,
     updatedAt TEXT
 );
 `
+
+// WorkHourUserProfileView is persisted user metadata + /user-info data (JSON) for the Preferences UI.
+type WorkHourUserProfileView struct {
+	UserAccount  string `json:"userAccount"`
+	HrID         int64  `json:"hrId"`
+	ShiftNameZh  string `json:"shiftNameZh"`
+	UpdatedAt    string `json:"updatedAt"`
+	UserInfoJSON string `json:"userInfoJson"`
+}
+
+func migrateWorkHourUserProfileTable(db *sql.DB) {
+	// Safe to re-run: duplicate column is ignored in drivers that error; we ignore any ALTER error.
+	_, _ = db.Exec(`ALTER TABLE workhour_user_profile ADD COLUMN userInfoJson TEXT`)
+}
 
 func (a *App) openWorkHourDB() (*sql.DB, error) {
 	p, err := a.resolvedWorkHourDBPath()
@@ -107,21 +122,90 @@ func (a *App) openWorkHourDB() (*sql.DB, error) {
 		_ = db.Close()
 		return nil, err
 	}
+	migrateWorkHourUserProfileTable(db)
 	return db, nil
 }
 
 // upsertWorkHourUserProfile persists tenant + user-info fields (single logical row id=1).
-func (a *App) upsertWorkHourUserProfile(userAccount string, hrID int64, shiftNameZh string) error {
+// userInfoJSON is the raw JSON of /user-info `data` (or empty).
+func (a *App) upsertWorkHourUserProfile(userAccount string, hrID int64, shiftNameZh, userInfoJSON string) error {
 	db, err := a.openWorkHourDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	_, err = db.Exec(
-		`INSERT OR REPLACE INTO workhour_user_profile (id, userAccount, hrId, shiftNameZh, updatedAt) VALUES (1, ?, ?, ?, ?)`,
-		userAccount, hrID, shiftNameZh, time.Now().UTC().Format(time.RFC3339),
+		`INSERT OR REPLACE INTO workhour_user_profile (id, userAccount, hrId, shiftNameZh, userInfoJson, updatedAt) VALUES (1, ?, ?, ?, ?, ?)`,
+		userAccount, hrID, shiftNameZh, nullString(userInfoJSON), time.Now().UTC().Format(time.RFC3339),
 	)
 	return err
+}
+
+func nullString(s string) any {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	return s
+}
+
+// hasWorkHourUserProfileInDB returns true when the logical profile row has enough data to use without calling user-info.
+func (a *App) hasWorkHourUserProfileInDB() (bool, error) {
+	if a == nil {
+		return false, nil
+	}
+	db, err := a.openWorkHourDB()
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+	var ua sql.NullString
+	var hrID sql.NullInt64
+	err = db.QueryRow(
+		`SELECT userAccount, hrId FROM workhour_user_profile WHERE id = 1`,
+	).Scan(&ua, &hrID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	if !ua.Valid || strings.TrimSpace(ua.String) == "" {
+		return false, nil
+	}
+	if !hrID.Valid || hrID.Int64 == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+// readWorkHourUserProfileView loads id=1 row for UI or memory (best-effort).
+func (a *App) readWorkHourUserProfileView() (WorkHourUserProfileView, error) {
+	var out WorkHourUserProfileView
+	if a == nil {
+		return out, nil
+	}
+	db, err := a.openWorkHourDB()
+	if err != nil {
+		return out, err
+	}
+	defer db.Close()
+	var ua, shift, at, uij sql.NullString
+	var hrID sql.NullInt64
+	err = db.QueryRow(
+		`SELECT userAccount, hrId, shiftNameZh, updatedAt, userInfoJson FROM workhour_user_profile WHERE id = 1`,
+	).Scan(&ua, &hrID, &shift, &at, &uij)
+	if err == sql.ErrNoRows {
+		return out, nil
+	}
+	if err != nil {
+		return out, err
+	}
+	out.UserAccount = ns(ua)
+	out.HrID = ni(hrID)
+	out.ShiftNameZh = ns(shift)
+	out.UpdatedAt = ns(at)
+	out.UserInfoJSON = ns(uij)
+	return out, nil
 }
 
 func ns(s sql.NullString) string {

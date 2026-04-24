@@ -89,18 +89,14 @@ type tenantResp struct {
 	} `json:"data"`
 }
 
-// userInfoResp matches POST /user-info (replaces legacy /hr-id envelope).
-type userInfoResp struct {
-	Status      int    `json:"status"`
-	MessageCode string `json:"messageCode"`
-	MessageText string `json:"messageText"`
-	OK          bool   `json:"ok"`
-	Data        *struct {
-		HrID                interface{} `json:"hrId"` // number or string from upstream
-		ShiftInformationDTO *struct {
-			ShiftNameZh string `json:"shiftNameZh"`
-		} `json:"shiftInformationDTO"`
-	} `json:"data"`
+// userInfoEnvelope: Data 用 RawMessage 保留 /user-info 的完整 `data`（写入 SQLite 与 UI），
+// 避免窄 struct Unmarshal 丢字段导致「从服务器刷新」后仍只见 hrId+shiftNameZh 片段。
+type userInfoEnvelope struct {
+	Status      int             `json:"status"`
+	MessageCode string          `json:"messageCode"`
+	MessageText string          `json:"messageText"`
+	OK          bool            `json:"ok"`
+	Data        json.RawMessage `json:"data"`
 }
 
 type workHourUserInfo struct {
@@ -108,7 +104,7 @@ type workHourUserInfo struct {
 	ShiftNameZh string
 }
 
-func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[string]string) (string, error) {
+func (a *App) fetchUserAccountForSession(ctx context.Context, client *http.Client) (string, error) {
 	url := envOr("WORK_HOUR_TENANT_URL", config.GetWorkHour().TenantURL)
 	body := map[string]string{
 		"rentId":     "HuaWei",
@@ -117,7 +113,7 @@ func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[stri
 		"url":        "hr.huawei.com",
 		"parentCode": "servicetimeflow",
 	}
-	raw, code, err := postJSON(ctx, client, url, body, cookies)
+	raw, code, err := a.workHourPostJSON(ctx, client, url, body)
 	if err != nil {
 		return "", err
 	}
@@ -134,10 +130,12 @@ func fetchUserAccount(ctx context.Context, client *http.Client, cookies map[stri
 	return tr.Data.Tenant.UserAccount, nil
 }
 
-func fetchWorkHourUserInfo(ctx context.Context, client *http.Client, cookies map[string]string, userAccount string) (workHourUserInfo, error) {
+// userInfoDataJSON 为 /user-info 的 data 段 JSON，写入 SQLite 供「用户信息」与离线记忆。
+func (a *App) fetchWorkHourUserInfoForSession(ctx context.Context, client *http.Client, userAccount string) (workHourUserInfo, string, error) {
 	var out workHourUserInfo
+	var outJSON string
 	if len(userAccount) < 2 {
-		return out, errors.New("userAccount 过短")
+		return out, outJSON, errors.New("userAccount 过短")
 	}
 	url := envOr("WORK_HOUR_USER_INFO_URL", config.GetWorkHour().UserInfoURL)
 	body := map[string]string{
@@ -146,45 +144,57 @@ func fetchWorkHourUserInfo(ctx context.Context, client *http.Client, cookies map
 		"locale":        "zh",
 		"platform":      "PC",
 	}
-	raw, code, err := postJSON(ctx, client, url, body, cookies)
+	raw, code, err := a.workHourPostJSON(ctx, client, url, body)
 	if err != nil {
-		return out, err
+		return out, outJSON, err
 	}
 	if code < 200 || code >= 300 {
-		return out, fmt.Errorf("user-info 接口 HTTP %d: %s", code, truncate(string(raw), 500))
+		return out, outJSON, fmt.Errorf("user-info 接口 HTTP %d: %s", code, truncate(string(raw), 500))
 	}
-	var env userInfoResp
+	var env userInfoEnvelope
 	if err := json.Unmarshal(raw, &env); err != nil {
-		return out, err
+		return out, outJSON, err
 	}
 	if env.Status != 200 || !env.OK {
-		return out, fmt.Errorf(
+		return out, outJSON, fmt.Errorf(
 			"user-info 业务失败: status=%d ok=%v message=%s (%s)",
 			env.Status, env.OK, env.MessageText, env.MessageCode,
 		)
 	}
-	if env.Data == nil {
-		return out, errors.New("user-info 响应缺少 data")
+	if len(bytes.TrimSpace(env.Data)) == 0 {
+		return out, outJSON, errors.New("user-info 响应缺少 data")
 	}
-	id := numToInt64(env.Data.HrID)
+	outJSON = string(env.Data)
+
+	// 仅从 data 中解出业务必要字段
+	var dataWire struct {
+		HrID                interface{} `json:"hrId"`
+		ShiftInformationDTO *struct {
+			ShiftNameZh string `json:"shiftNameZh"`
+		} `json:"shiftInformationDTO"`
+	}
+	if err := json.Unmarshal(env.Data, &dataWire); err != nil {
+		return out, outJSON, fmt.Errorf("解析 user-info data: %w", err)
+	}
+	id := numToInt64(dataWire.HrID)
 	if id == 0 {
-		return out, errors.New("user-info 响应 data.hrId 无效或为空")
+		return out, outJSON, errors.New("user-info 响应 data.hrId 无效或为空")
 	}
 	out.HrID = id
-	if env.Data.ShiftInformationDTO != nil {
-		out.ShiftNameZh = strings.TrimSpace(env.Data.ShiftInformationDTO.ShiftNameZh)
+	if dataWire.ShiftInformationDTO != nil {
+		out.ShiftNameZh = strings.TrimSpace(dataWire.ShiftInformationDTO.ShiftNameZh)
 	}
-	return out, nil
+	return out, outJSON, nil
 }
 
-func fetchWorkHourPayload(ctx context.Context, client *http.Client, cookies map[string]string, hrID int64) (json.RawMessage, error) {
+func (a *App) fetchWorkHourPayloadForSession(ctx context.Context, client *http.Client, hrID int64) (json.RawMessage, error) {
 	url := envOr("WORK_HOUR_WORKHOUR_URL", config.GetWorkHour().WorkHourURL)
 	body := map[string]any{
 		"hrId":     hrID,
 		"locale":   "zh",
 		"platform": "PC",
 	}
-	raw, code, err := postJSON(ctx, client, url, body, cookies)
+	raw, code, err := a.workHourPostJSON(ctx, client, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +371,7 @@ func (a *App) workHourCookiesForHTTP() map[string]string {
 	return cloneCookieMap(a.workHourCookies)
 }
 
-// bootstrapWorkHourSession：login_url（Cookie）→ tenant_url → user_info_url，并写入全局 Cookie、hrId、班次与 SQLite 用户概要。
+// bootstrapWorkHourSession：1）无头登录取 Cookie 到全局 2）若 SQLite 已缓存用户，则只从库恢复内存 3）否则再请求 tenant + user-info 并写入 SQLite 与内存。
 func (a *App) bootstrapWorkHourSession(ctx context.Context) (err error) {
 	if a == nil {
 		return errors.New("app is nil")
@@ -372,67 +382,76 @@ func (a *App) bootstrapWorkHourSession(ctx context.Context) (err error) {
 		a.muWorkHourAuth.Unlock()
 	}()
 
-	cookies, err := getCookiesViaChromedp(ctx)
-	if err != nil {
+	if err = a.refreshWorkHourCookiesFromBrowser(ctx); err != nil {
 		return err
 	}
-	a.muWorkHourAuth.Lock()
-	a.workHourCookies = cloneCookieMap(cookies)
-	a.muWorkHourAuth.Unlock()
+
+	if ok, qerr := a.hasWorkHourUserProfileInDB(); qerr == nil && ok {
+		if loadErr := a.loadWorkHourUserFromDBIntoMemory(); loadErr == nil {
+			return nil
+		} else {
+			log.Printf("niumer: load user profile from sqlite: %v, will re-fetch from network", loadErr)
+		}
+	} else if qerr != nil {
+		log.Printf("niumer: check workhour_user_profile: %v", qerr)
+	}
 
 	client := workHourHTTPClient()
-	ck := a.workHourCookiesForHTTP()
-	uid, err := fetchUserAccount(ctx, client, ck)
-	if err != nil {
-		return fmt.Errorf("获取 userAccount: %w", err)
+	uid, nerr := a.fetchUserAccountForSession(ctx, client)
+	if nerr != nil {
+		return fmt.Errorf("获取 userAccount: %w", nerr)
 	}
-	uinfo, err := fetchWorkHourUserInfo(ctx, client, ck, uid)
-	if err != nil {
-		return fmt.Errorf("获取 user-info: %w", err)
+	uinfo, dataJSON, nerr2 := a.fetchWorkHourUserInfoForSession(ctx, client, uid)
+	if nerr2 != nil {
+		return fmt.Errorf("获取 user-info: %w", nerr2)
+	}
+	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
+	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh, dataJSON); upErr != nil {
+		log.Printf("niumer: persist workhour_user_profile: %v", upErr)
 	}
 	a.muWorkHourAuth.Lock()
 	a.workHourHrID = uinfo.HrID
 	a.workHourUserAccount = uid
 	a.muWorkHourAuth.Unlock()
-	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
-	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh); upErr != nil {
-		log.Printf("niumer: persist workhour_user_profile: %v", upErr)
-	}
 	return nil
 }
 
-// ensureWorkHourUserAndHRID 在已有 Cookie 的前提下确保 hrId 已就绪（必要时仅重试 tenant + user-info，不再开浏览器）。
+// ensureWorkHourUserAndHRID 确保内存中已有 hrId / 用户账号；优先从 SQLite 恢复，否则在已有 Cookie 时请求 tenant + user-info 并落库。
 func (a *App) ensureWorkHourUserAndHRID(ctx context.Context) error {
 	if a == nil {
 		return errors.New("app is nil")
 	}
 	a.muWorkHourAuth.RLock()
-	hasCookies := len(a.workHourCookies) > 0
 	hrID := a.workHourHrID
+	ua := strings.TrimSpace(a.workHourUserAccount)
 	bootErr := a.workHourBootstrapErr
+	cookieCount := len(a.workHourCookies)
 	a.muWorkHourAuth.RUnlock()
-	if hasCookies && hrID != 0 {
+	if hrID != 0 && ua != "" {
 		return nil
 	}
-	if !hasCookies {
+	if ok, _ := a.hasWorkHourUserProfileInDB(); ok {
+		if loadErr := a.loadWorkHourUserFromDBIntoMemory(); loadErr == nil {
+			return nil
+		}
+	}
+	if cookieCount == 0 {
 		if bootErr != nil {
 			return fmt.Errorf("无有效考勤 Cookie: %w", bootErr)
 		}
 		return errors.New("无有效考勤 Cookie（请确认登录页与 WORK_HOUR_WAIT_CSS）")
 	}
-
 	client := workHourHTTPClient()
-	ck := a.workHourCookiesForHTTP()
-	uid, err := fetchUserAccount(ctx, client, ck)
+	uid, err := a.fetchUserAccountForSession(ctx, client)
 	if err != nil {
 		return fmt.Errorf("重新获取 userAccount: %w", err)
 	}
-	uinfo, err := fetchWorkHourUserInfo(ctx, client, ck, uid)
+	uinfo, dataJSON, err := a.fetchWorkHourUserInfoForSession(ctx, client, uid)
 	if err != nil {
 		return fmt.Errorf("重新获取 user-info: %w", err)
 	}
 	a.setWorkHourShiftZh(uinfo.ShiftNameZh)
-	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh); upErr != nil {
+	if upErr := a.upsertWorkHourUserProfile(uid, uinfo.HrID, uinfo.ShiftNameZh, dataJSON); upErr != nil {
 		log.Printf("niumer: persist workhour_user_profile: %v", upErr)
 	}
 	a.muWorkHourAuth.Lock()
@@ -468,8 +487,7 @@ func (a *App) RefreshWorkHourData() ([]AttendanceRecord, error) {
 	}
 
 	client := workHourHTTPClient()
-	cookies := a.workHourCookiesForHTTP()
-	raw, err := fetchWorkHourPayload(ctx, client, cookies, hrID)
+	raw, err := a.fetchWorkHourPayloadForSession(ctx, client, hrID)
 	if err != nil {
 		return nil, fmt.Errorf("获取考勤数据: %w", err)
 	}

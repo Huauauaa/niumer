@@ -6,6 +6,7 @@ import type { EditorTab } from "./components/EditorGroup";
 import { EditorGroup } from "./components/EditorGroup";
 import { MenuBar } from "./components/MenuBar";
 import { PreferencesDialog } from "./components/PreferencesDialog";
+import { UserInfoDialog } from "./components/UserInfoDialog";
 import { Sidebar } from "./components/Sidebar";
 import { StatusBar } from "./components/StatusBar";
 import type { BlogDocument } from "./types/blog";
@@ -99,6 +100,7 @@ export default function App() {
   const [jsonDraftLoaded, setJsonDraftLoaded] = useState(false);
 
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [userInfoOpen, setUserInfoOpen] = useState(false);
   const [blogWorkDir, setBlogWorkDir] = useState("");
   const [jsonFormatterWorkDir, setJsonFormatterWorkDir] = useState("");
   const [reminderDbPath, setReminderDbPath] = useState("");
@@ -588,7 +590,14 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-[#1e1e1e]">
-      <MenuBar onOpenPreference={() => setPrefsOpen(true)} />
+      <MenuBar
+        onOpenPreference={() => setPrefsOpen(true)}
+        onOpenUserInfo={() => setUserInfoOpen(true)}
+      />
+      <UserInfoDialog
+        open={userInfoOpen}
+        onClose={() => setUserInfoOpen(false)}
+      />
       <PreferencesDialog
         open={prefsOpen}
         onClose={() => setPrefsOpen(false)}

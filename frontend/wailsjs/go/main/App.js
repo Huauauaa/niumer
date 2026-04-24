@@ -74,6 +74,10 @@ export function GetWorkHourShiftSchedule() {
   return window['go']['main']['App']['GetWorkHourShiftSchedule']();
 }
 
+export function GetWorkHourUserProfile() {
+  return window['go']['main']['App']['GetWorkHourUserProfile']();
+}
+
 export function ListBlogMarkdownFiles() {
   return window['go']['main']['App']['ListBlogMarkdownFiles']();
 }
@@ -96,6 +100,10 @@ export function RefreshPullRequestList(arg1, arg2) {
 
 export function RefreshWorkHourData() {
   return window['go']['main']['App']['RefreshWorkHourData']();
+}
+
+export function RefreshWorkHourUserInfo() {
+  return window['go']['main']['App']['RefreshWorkHourUserInfo']();
 }
 
 export function RenameBlogFile(arg1, arg2) {

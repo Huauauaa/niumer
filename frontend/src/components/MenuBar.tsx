@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
   onOpenPreference: () => void;
+  onOpenUserInfo: () => void;
 };
 
-export function MenuBar({ onOpenPreference }: Props) {
+export function MenuBar({ onOpenPreference, onOpenUserInfo }: Props) {
   const [prefOpen, setPrefOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +56,13 @@ export function MenuBar({ onOpenPreference }: Props) {
           </div>
         )}
       </div>
+      <button
+        type="button"
+        className="rounded px-2 py-0.5 text-[#cccccc] hover:bg-white/10 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+        onClick={onOpenUserInfo}
+      >
+        User info
+      </button>
     </header>
   );
 }

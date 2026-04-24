@@ -160,14 +160,14 @@ export function PreferencesDialog({ open, onClose, onSaved }: Props) {
       }}
     >
       <div
-        className="max-h-[min(100%-2rem,90vh)] w-[min(100%-2rem,560px)] overflow-y-auto rounded border border-[var(--vscode-border)] bg-[#252526] p-4 shadow-xl"
+        className="max-h-[min(100%-2rem,90vh)] w-[min(100%-2rem,640px)] overflow-y-auto rounded border border-[var(--vscode-border)] bg-[#252526] p-4 shadow-xl"
         role="dialog"
         aria-labelledby="prefs-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <h2
           id="prefs-title"
-          className="mb-3 text-[13px] font-semibold text-[#cccccc]"
+          className="m-0 mb-3 min-h-[28px] text-[13px] font-semibold text-[#cccccc]"
         >
           Preference
         </h2>

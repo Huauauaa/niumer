@@ -38,6 +38,8 @@ export function GetWorkHourRecords():Promise<Array<main.AttendanceRecord>>;
 
 export function GetWorkHourShiftSchedule():Promise<string>;
 
+export function GetWorkHourUserProfile():Promise<main.WorkHourUserProfileView>;
+
 export function ListBlogMarkdownFiles():Promise<Array<string>>;
 
 export function ListCustomReminders():Promise<Array<main.CustomReminder>>;
@@ -49,6 +51,8 @@ export function ReadJsonFormatterDraft():Promise<string>;
 export function RefreshPullRequestList(arg1:number,arg2:number):Promise<main.PullRequestListResponse>;
 
 export function RefreshWorkHourData():Promise<Array<main.AttendanceRecord>>;
+
+export function RefreshWorkHourUserInfo():Promise<main.WorkHourUserProfileView>;
 
 export function RenameBlogFile(arg1:string,arg2:string):Promise<void>;
 

@@ -17,13 +17,14 @@ type App struct {
 	// workHourEffWindows derived from shiftNameZh (Work / Rest); nil = use hardcoded default in compute.
 	workHourEffWindows []workHourTimeWindow
 
-	// 考勤：启动后 chromedp 写入 Cookie，再 tenant + user-info；进入工时页仅用 Cookie 调 workhour_url。
-	// PR 列表：同 Cookie GET pull_request_list_url（与 mockserver / 生产端一致）。
-	muWorkHourAuth       sync.RWMutex
-	workHourCookies      map[string]string
-	workHourHrID         int64
-	workHourUserAccount  string
-	workHourBootstrapErr error
+	// 1）启动：chromedp 取 Cookie 全局缓存；2）若 SQLite 已有 userAccount+hrId 则仅从库恢复用户态，否则 tenant + /user-info 后落库；
+	// 3）各接口用 workHourPostJSON/workHourGet，遇 403 则重取 Cookie 再发一次。PR 等 GET 走 workHourGet；工时 POST 见 workHourPostJSON。
+	muWorkHourAuth        sync.RWMutex
+	muWorkHourCookieCrawl sync.Mutex // 串行 chromedp 取 Cookie，避免与 403 重登入并发
+	workHourCookies       map[string]string
+	workHourHrID          int64
+	workHourUserAccount   string
+	workHourBootstrapErr  error
 	workHourBootstrapDone chan struct{} // closed after first bootstrap attempt (success or fail)
 }
 

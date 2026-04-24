@@ -154,6 +154,26 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class WorkHourUserProfileView {
+	    userAccount: string;
+	    hrId: number;
+	    shiftNameZh: string;
+	    updatedAt: string;
+	    userInfoJson: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new WorkHourUserProfileView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.userAccount = source["userAccount"];
+	        this.hrId = source["hrId"];
+	        this.shiftNameZh = source["shiftNameZh"];
+	        this.updatedAt = source["updatedAt"];
+	        this.userInfoJson = source["userInfoJson"];
+	    }
+	}
 
 }
 
