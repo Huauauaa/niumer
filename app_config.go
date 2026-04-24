@@ -15,12 +15,17 @@ type appConfig struct {
 	JsonFormatterWorkDir string `json:"jsonFormatterWorkDir"`
 	// Theme is "dark" or "light" (same as workbench color theme in spirit).
 	Theme string `json:"theme,omitempty"`
+	// OpenAI-compatible chat API (e.g. https://api.deepseek.com).
+	AIBaseURL string `json:"aiBaseUrl,omitempty"`
+	AIAPIKey  string `json:"aiApiKey,omitempty"`
+	AIModel   string `json:"aiModel,omitempty"`
 }
 
 // userDataRoot is the app folder under the OS user config directory, e.g.:
-//   macOS: ~/Library/Application Support/niumer
-//   Linux: ~/.config/niumer (or $XDG_CONFIG_HOME/niumer)
-//   Windows: %AppData%\niumer
+//
+//	macOS: ~/Library/Application Support/niumer
+//	Linux: ~/.config/niumer (or $XDG_CONFIG_HOME/niumer)
+//	Windows: %AppData%\niumer
 func userDataRoot() (string, error) {
 	d, err := os.UserConfigDir()
 	if err != nil {

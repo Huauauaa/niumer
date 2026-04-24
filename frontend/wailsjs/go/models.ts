@@ -1,5 +1,35 @@
 export namespace main {
 	
+	export class AIChatMessage {
+	    role: string;
+	    content: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AIChatMessage(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.role = source["role"];
+	        this.content = source["content"];
+	    }
+	}
+	export class AISettingsView {
+	    baseUrl: string;
+	    apiKey: string;
+	    model: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AISettingsView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.baseUrl = source["baseUrl"];
+	        this.apiKey = source["apiKey"];
+	        this.model = source["model"];
+	    }
+	}
 	export class AboutView {
 	    appName: string;
 	    version: string;

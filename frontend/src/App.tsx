@@ -136,6 +136,9 @@ export default function App() {
     null,
   );
 
+  const [aiChatResetKey, setAiChatResetKey] = useState(0);
+  const [aiSettingsNonce, setAiSettingsNonce] = useState(0);
+
   const dragRef = useRef<"sidebar" | "panel" | null>(null);
 
   const reloadReminders = useCallback(
@@ -572,7 +575,9 @@ export default function App() {
               ]
             : activity === "reminder"
               ? [{ id: OTHER_TAB_ID, title: "日历", dirty: false }]
-              : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
+              : activity === "ai"
+                ? [{ id: OTHER_TAB_ID, title: "AI", dirty: false }]
+                : [{ id: OTHER_TAB_ID, title: "Home", dirty: false }];
 
   const editorActiveId = activity === "blog" ? blogActiveId : otherActiveId;
 
@@ -650,6 +655,16 @@ export default function App() {
             onReminderAdd={handleReminderAdd}
             onReminderUpdate={handleReminderUpdate}
             onReminderDelete={handleReminderDelete}
+            onAINewChat={
+              activity === "ai"
+                ? () => setAiChatResetKey((k) => k + 1)
+                : undefined
+            }
+            onAIOpenSettings={
+              activity === "ai"
+                ? () => setAiSettingsNonce((n) => n + 1)
+                : undefined
+            }
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <EditorGroup
@@ -677,6 +692,9 @@ export default function App() {
               pullRequestBreadcrumbLabel={pullRequestBreadcrumb}
               reminderView={activity === "reminder"}
               customReminders={customReminders}
+              aiView={activity === "ai"}
+              aiChatResetKey={aiChatResetKey}
+              aiSettingsNonce={aiSettingsNonce}
             />
             {activity !== "reminder" ? (
               <BottomPanel

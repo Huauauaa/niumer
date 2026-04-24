@@ -59,12 +59,16 @@ func (a *App) defaultUserSettingsJSON() (string, error) {
 	if th == "" {
 		th = "dark"
 	}
+	full, _ := readAppConfig()
 	c := appConfig{
 		BlogWorkDir:          a.GetBlogWorkDir(),
 		JsonFormatterWorkDir: a.GetJsonFormatterWorkDir(),
 		WorkHourDBPath:       wh,
 		ReminderDBPath:       rm,
 		Theme:                th,
+		AIBaseURL:            full.AIBaseURL,
+		AIAPIKey:             full.AIAPIKey,
+		AIModel:              full.AIModel,
 	}
 	b, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
@@ -93,6 +97,9 @@ func (a *App) WriteUserSettingsJSON(content string) error {
 		{"workHourDbPath"},
 		{"reminderDbPath"},
 		{"theme"},
+		{"aiBaseUrl"},
+		{"aiApiKey"},
+		{"aiModel"},
 	} {
 		if v, ok := m[kv.key]; ok && v != nil {
 			if _, ok := v.(string); !ok {
@@ -120,28 +127,69 @@ func (a *App) WriteUserSettingsJSON(content string) error {
 		return err
 	}
 
-	if _, has := m["theme"]; !has {
-		return nil
-	}
 	c, err := readAppConfig()
 	if err != nil {
 		c = appConfig{}
 	}
-	if m["theme"] == nil {
-		c.Theme = ""
-	} else if s, ok := m["theme"].(string); ok {
-		s = strings.TrimSpace(strings.ToLower(s))
-		if s == "" {
+
+	if _, has := m["theme"]; has {
+		if m["theme"] == nil {
 			c.Theme = ""
-		} else if s != "dark" && s != "light" {
-			return fmt.Errorf(`theme must be "dark" or "light"`)
+		} else if s, ok := m["theme"].(string); ok {
+			s = strings.TrimSpace(strings.ToLower(s))
+			if s == "" {
+				c.Theme = ""
+			} else if s != "dark" && s != "light" {
+				return fmt.Errorf(`theme must be "dark" or "light"`)
+			} else {
+				c.Theme = s
+			}
 		} else {
-			c.Theme = s
+			return fmt.Errorf(`theme must be a JSON string`)
 		}
-	} else {
-		return fmt.Errorf(`theme must be a JSON string`)
 	}
-	return writeAppConfig(c)
+
+	if _, has := m["aiBaseUrl"]; has {
+		if m["aiBaseUrl"] == nil {
+			c.AIBaseURL = ""
+		} else if s, ok := m["aiBaseUrl"].(string); ok {
+			c.AIBaseURL = strings.TrimSpace(s)
+		} else {
+			return fmt.Errorf("aiBaseUrl must be a JSON string")
+		}
+	}
+	if _, has := m["aiApiKey"]; has {
+		if m["aiApiKey"] == nil {
+			c.AIAPIKey = ""
+		} else if s, ok := m["aiApiKey"].(string); ok {
+			c.AIAPIKey = strings.TrimSpace(s)
+		} else {
+			return fmt.Errorf("aiApiKey must be a JSON string")
+		}
+	}
+	if _, has := m["aiModel"]; has {
+		if m["aiModel"] == nil {
+			c.AIModel = ""
+		} else if s, ok := m["aiModel"].(string); ok {
+			c.AIModel = strings.TrimSpace(s)
+		} else {
+			return fmt.Errorf("aiModel must be a JSON string")
+		}
+	}
+
+	if _, has := m["theme"]; has || mapHasAny(m, []string{"aiBaseUrl", "aiApiKey", "aiModel"}) {
+		return writeAppConfig(c)
+	}
+	return nil
+}
+
+func mapHasAny(m map[string]any, keys []string) bool {
+	for _, k := range keys {
+		if _, ok := m[k]; ok {
+			return true
+		}
+	}
+	return false
 }
 
 func stringField(m map[string]any, key string) string {

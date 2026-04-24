@@ -1,4 +1,5 @@
 import {
+  IconAI,
   IconBlog,
   IconPullRequest,
   IconReminder,
@@ -11,7 +12,8 @@ export type ActivityId =
   | "tool"
   | "pullRequest"
   | "workhour"
-  | "reminder";
+  | "reminder"
+  | "ai";
 
 type Props = {
   active: ActivityId;
@@ -24,6 +26,7 @@ const entries: { id: ActivityId; label: string; Icon: typeof IconBlog }[] = [
   { id: "pullRequest", label: "Pull Request", Icon: IconPullRequest },
   { id: "workhour", label: "Workhour", Icon: IconWorkhour },
   { id: "reminder", label: "提醒", Icon: IconReminder },
+  { id: "ai", label: "AI", Icon: IconAI },
 ];
 
 export function ActivityBar({ active, onChange }: Props) {

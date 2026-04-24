@@ -41,6 +41,9 @@ type Props = {
   onReminderAdd?: (name: string, date: string) => Promise<void>;
   onReminderUpdate?: (id: string, name: string, date: string) => Promise<void>;
   onReminderDelete?: (row: CustomReminder) => Promise<void>;
+  /** AI activity: reset chat / open connection form */
+  onAINewChat?: () => void;
+  onAIOpenSettings?: () => void;
 };
 
 const rowClass =
@@ -302,6 +305,8 @@ function SidebarBody({
   onReminderAdd,
   onReminderUpdate,
   onReminderDelete,
+  onAINewChat,
+  onAIOpenSettings,
 }: Omit<Props, "width" | "onResizeStart">) {
   if (activity === "blog") {
     return (
@@ -440,6 +445,36 @@ function SidebarBody({
             onDelete={onReminderDelete}
           />
         ) : null}
+      </div>
+    );
+  }
+
+  if (activity === "ai") {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[var(--vscode-fg)]">
+          AI
+        </div>
+        <div className="flex flex-col gap-0.5 px-1 pb-2">
+          <button
+            type="button"
+            className={rowClass}
+            onClick={() => onAINewChat?.()}
+          >
+            新对话
+          </button>
+          <button
+            type="button"
+            className={rowClass}
+            onClick={() => onAIOpenSettings?.()}
+          >
+            连接设置
+          </button>
+        </div>
+        <p className="mt-auto px-3 pb-3 text-[11px] leading-relaxed text-[var(--vscode-fg-muted)]">
+          对话经本机转发至 OpenAI 兼容接口（如 DeepSeek），密钥写入{" "}
+          <code className="font-mono text-[10px]">settings.json</code>。
+        </p>
       </div>
     );
   }

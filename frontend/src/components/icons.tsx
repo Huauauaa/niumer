@@ -165,6 +165,22 @@ export function IconWorkhour({ className }: IconProps) {
   );
 }
 
+/** Chat bubble — AI assistant */
+export function IconAI({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7V9zm4 0h6v2h-6V9zm-4 4h10v2H7v-2z" />
+    </svg>
+  );
+}
+
 /** Bell — 节假日 / 提醒 */
 export function IconReminder({ className }: IconProps) {
   return (

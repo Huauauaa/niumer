@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CustomReminder } from "../types/reminder";
 import type { AttendanceRecord } from "../types/workhour";
+import { AIChatView } from "./AIChatView";
 import { HolidayReminderView } from "./HolidayReminderView";
 import { JsonFormatterView } from "./JsonFormatterView";
 import { MarkdownPreview } from "./MarkdownPreview";
@@ -38,6 +39,10 @@ type Props = {
   reminderView?: boolean;
   /** 侧栏「我的提醒」全部条目（主区「我的倒计时」一并展示） */
   customReminders?: CustomReminder[];
+  /** OpenAI-compatible AI chat (Go proxies HTTP). */
+  aiView?: boolean;
+  aiChatResetKey?: number;
+  aiSettingsNonce?: number;
 };
 
 const sampleLines = [
@@ -79,6 +84,9 @@ export function EditorGroup({
   pullRequestBreadcrumbLabel,
   reminderView = false,
   customReminders = [],
+  aiView = false,
+  aiChatResetKey = 0,
+  aiSettingsNonce = 0,
 }: Props) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -105,6 +113,17 @@ export function EditorGroup({
   const shellClass =
     "flex min-h-0 min-w-0 flex-1 flex-col" as const;
   const shellStyle = { background: "var(--vscode-editor-bg)" } as const;
+
+  if (aiView) {
+    return (
+      <div className={shellClass} style={shellStyle}>
+        <AIChatView
+          resetKey={aiChatResetKey}
+          settingsNonce={aiSettingsNonce}
+        />
+      </div>
+    );
+  }
 
   if (reminderView) {
     return (

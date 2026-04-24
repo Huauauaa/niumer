@@ -39,7 +39,7 @@ wails dev
 
 `wails dev` 会安装前端依赖、启动 Vite 开发服务并启动桌面窗口。
 
-**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。`configs/config.yaml` 中 `workhour` 的 URL 与 `pull_request_list_url` 可指向该 mock（同 `workhour_url` 模式）。**Pull Request** 列表由 Go **`RefreshPullRequestList`** 使用与考勤相同的浏览器 Cookie 请求 `pull_request_list_url`（可 **`PULL_REQUEST_LIST_URL` 环境变量**覆盖）；**Pull Request** 活动栏使用返回数据；右侧 iframe 打开选中项的 `url`（mock 下为同机 `GET /pr-preview/{id}` 页面）。需先让应用在启动时完成考勤登录/tenant/user-info，以便带 Cookie 访问上述 GET。
+**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。同进程还提供 **`POST /v1/chat/completions`**（OpenAI 兼容，与 niumer AI 路径一致；请求体含 **`"stream": true`** 时返回 **SSE**）及别名 **`POST /chat/completions`**，便于把应用内 AI 的 Base URL 设为 `http://127.0.0.1:17890` 做本地流式联调。`configs/config.yaml` 中 `workhour` 的 URL 与 `pull_request_list_url` 可指向该 mock（同 `workhour_url` 模式）。**Pull Request** 列表由 Go **`RefreshPullRequestList`** 使用与考勤相同的浏览器 Cookie 请求 `pull_request_list_url`（可 **`PULL_REQUEST_LIST_URL` 环境变量**覆盖）；**Pull Request** 活动栏使用返回数据；右侧 iframe 打开选中项的 `url`（mock 下为同机 `GET /pr-preview/{id}` 页面）。需先让应用在启动时完成考勤登录/tenant/user-info，以便带 Cookie 访问上述 GET。
 
 ### Makefile 快捷命令
 
@@ -77,8 +77,13 @@ npm run dev
 | `jsonFormatterWorkDir` | JSON 格式化器草稿目录，默认 `~/Documents/niumer-json-formatter`（Windows / Linux 亦为「用户目录/Documents/…」）；目录内保存 `draft.json` |
 | `workHourDbPath` | 考勤 SQLite 文件路径；留空则使用下文的默认 `work_hour.db` |
 | `theme` | 可选，窗口配色 **`dark`** / **`light`**。未写入 `settings.json` 时，启动仍先用 `localStorage` 里的主题；在偏好里点选主题或保存 JSON 后即写入本文件 |
+| `aiBaseUrl` | 可选，OpenAI 兼容 API 根地址（无尾斜杠），例如 DeepSeek：`https://api.deepseek.com` |
+| `aiApiKey` | 可选，上述接口的 Bearer Token（保存在本机 `settings.json`） |
+| `aiModel` | 可选，默认 **`deepseek-chat`**（留空时由应用使用此默认） |
 
-可在应用内通过偏好设置修改；偏好窗口标题栏右侧的 **Open Settings (JSON)** 图标（与 VS Code 一致）可打开 `User/settings.json` 的原始 JSON 进行编辑保存。也可在应用外直接编辑该文件（保存后由界面「Save」或重新打开偏好触发加载）。支持的字段为 **`blogWorkDir`、`jsonFormatterWorkDir`、`workHourDbPath`、`reminderDbPath`**（路径类字符串，前两项必填）以及可选的 **`theme`**（`"dark"` 或 `"light"`）。保存时按规则校验并写回磁盘；顶层其它键在保存后不会保留。
+可在应用内通过偏好设置修改；偏好窗口标题栏右侧的 **Open Settings (JSON)** 图标（与 VS Code 一致）可打开 `User/settings.json` 的原始 JSON 进行编辑保存。也可在应用外直接编辑该文件（保存后由界面「Save」或重新打开偏好触发加载）。支持的字段为 **`blogWorkDir`、`jsonFormatterWorkDir`、`workHourDbPath`、`reminderDbPath`**（路径类字符串，前两项必填）、可选的 **`theme`**（`"dark"` 或 `"light"`），以及可选的 **`aiBaseUrl`、`aiApiKey`、`aiModel`**。保存时按规则校验并写回磁盘；顶层其它键在保存后不会保留。
+
+**AI 对话**：活动栏最下方 **AI** 入口进入；侧栏可「新对话」「连接设置」。Go 使用 **`stream: true`** 请求 `{aiBaseUrl}/v1/chat/completions`（SSE），分片经 Wails **`niumer:ai:delta` / `niumer:ai:done` / `niumer:ai:error`** 事件推到前端，避免浏览器直连第三方 API 时的 CORS 限制。
 
 ## Work hour（考勤同步）
 
