@@ -34,6 +34,10 @@ export function EnsureWelcomeBlogFile() {
   return window['go']['main']['App']['EnsureWelcomeBlogFile']();
 }
 
+export function GetAboutInfo() {
+  return window['go']['main']['App']['GetAboutInfo']();
+}
+
 export function GetBlogWorkDir() {
   return window['go']['main']['App']['GetBlogWorkDir']();
 }
@@ -60,6 +64,14 @@ export function GetJsonFormatterWorkDir() {
 
 export function GetReminderDBPath() {
   return window['go']['main']['App']['GetReminderDBPath']();
+}
+
+export function GetUITheme() {
+  return window['go']['main']['App']['GetUITheme']();
+}
+
+export function GetUserSettingsFilePath() {
+  return window['go']['main']['App']['GetUserSettingsFilePath']();
 }
 
 export function GetWorkHourDBPath() {
@@ -94,6 +106,10 @@ export function ReadJsonFormatterDraft() {
   return window['go']['main']['App']['ReadJsonFormatterDraft']();
 }
 
+export function ReadUserSettingsJSON() {
+  return window['go']['main']['App']['ReadUserSettingsJSON']();
+}
+
 export function RefreshPullRequestList(arg1, arg2) {
   return window['go']['main']['App']['RefreshPullRequestList'](arg1, arg2);
 }
@@ -122,6 +138,10 @@ export function SetReminderDBPath(arg1) {
   return window['go']['main']['App']['SetReminderDBPath'](arg1);
 }
 
+export function SetUITheme(arg1) {
+  return window['go']['main']['App']['SetUITheme'](arg1);
+}
+
 export function SetWorkHourDBPath(arg1) {
   return window['go']['main']['App']['SetWorkHourDBPath'](arg1);
 }
@@ -136,4 +156,8 @@ export function WriteBlogFile(arg1, arg2) {
 
 export function WriteJsonFormatterDraft(arg1) {
   return window['go']['main']['App']['WriteJsonFormatterDraft'](arg1);
+}
+
+export function WriteUserSettingsJSON(arg1) {
+  return window['go']['main']['App']['WriteUserSettingsJSON'](arg1);
 }

@@ -1,5 +1,29 @@
 export namespace main {
 	
+	export class AboutView {
+	    appName: string;
+	    version: string;
+	    commit: string;
+	    buildTime: string;
+	    goVersion: string;
+	    wailsVersion: string;
+	    osArch: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AboutView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.appName = source["appName"];
+	        this.version = source["version"];
+	        this.commit = source["commit"];
+	        this.buildTime = source["buildTime"];
+	        this.goVersion = source["goVersion"];
+	        this.wailsVersion = source["wailsVersion"];
+	        this.osArch = source["osArch"];
+	    }
+	}
 	export class AttendanceRecord {
 	    id: number;
 	    creationDate: string;

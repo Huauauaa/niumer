@@ -63,25 +63,28 @@ npm run dev
 
 ## 应用配置
 
-配置文件路径由 Go 的 `os.UserConfigDir()` 决定，固定为其中的 **`niumer/config.json`**：
+用户偏好（博客目录、JSON formatter、SQLite 路径等）由 Go 的 `os.UserConfigDir()` 决定，存放在与 **VS Code `User/settings.json`** 同构的路径 **`niumer/User/settings.json`**：
 
-- **macOS**：`~/Library/Application Support/niumer/config.json`
-- **Linux**（常见）：`~/.config/niumer/config.json`（或 `$XDG_CONFIG_HOME/niumer/config.json`）
-- **Windows**：`%AppData%\niumer\config.json`
+- **macOS**：`~/Library/Application Support/niumer/User/settings.json`
+- **Linux**（常见）：`~/.config/niumer/User/settings.json`（或 `$XDG_CONFIG_HOME/niumer/User/settings.json`）
+- **Windows**：`%AppData%\niumer\User\settings.json`
+
+若仍存在旧版 **`niumer/config.json`**，应用会在首次读取时自动迁移到新路径并删除旧文件。
 
 | 字段 | 说明 |
 |------|------|
 | `blogWorkDir` | 博客 / Markdown 工作目录，默认 `~/Documents/niumer-blog` |
 | `jsonFormatterWorkDir` | JSON 格式化器草稿目录，默认 `~/Documents/niumer-json-formatter`（Windows / Linux 亦为「用户目录/Documents/…」）；目录内保存 `draft.json` |
 | `workHourDbPath` | 考勤 SQLite 文件路径；留空则使用下文的默认 `work_hour.db` |
+| `theme` | 可选，窗口配色 **`dark`** / **`light`**。未写入 `settings.json` 时，启动仍先用 `localStorage` 里的主题；在偏好里点选主题或保存 JSON 后即写入本文件 |
 
-可在应用内通过偏好设置修改；也可直接编辑 JSON（修改后重启或按界面逻辑重新加载）。
+可在应用内通过偏好设置修改；偏好窗口标题栏右侧的 **Open Settings (JSON)** 图标（与 VS Code 一致）可打开 `User/settings.json` 的原始 JSON 进行编辑保存。也可在应用外直接编辑该文件（保存后由界面「Save」或重新打开偏好触发加载）。支持的字段为 **`blogWorkDir`、`jsonFormatterWorkDir`、`workHourDbPath`、`reminderDbPath`**（路径类字符串，前两项必填）以及可选的 **`theme`**（`"dark"` 或 `"light"`）。保存时按规则校验并写回磁盘；顶层其它键在保存后不会保留。
 
 ## Work hour（考勤同步）
 
 1. **刷新**：Go 使用 **chromedp** 无头打开登录页获取 Cookie（无头 Chromium + 等待登录页上的选择器），再请求业务接口并将结果写入 **SQLite**。
 2. **Cookie**：仅从浏览器会话读取，**不从环境变量注入**。
-3. **默认数据库**：未配置 `workHourDbPath` 时，使用用户配置目录下的 **`…/niumer/work_hour.db`**（与 `config.json` 同父目录 `niumer`）。
+3. **默认数据库**：未配置 `workHourDbPath` 时，使用用户数据目录下的 **`…/niumer/work_hour.db`**（与 `User/settings.json` 同父目录 `niumer`）。
 4. **YAML 配置**：考勤相关 URL / CSS 选择器默认写在仓库 **`configs/config.yaml`**；按环境叠加 **`configs/config.dev.yaml`** 或 **`configs/config.prod.yaml`**（由环境变量 **`NIUMER_ENV`** 选择，未设置时视为 **`dev`**）。文件在构建时嵌入二进制，修改后需重新 `wails build` / `go build`。`WORK_HOUR_*` 环境变量仍**优先于** YAML 中的值。
 
 **可选环境变量**（覆盖 YAML 中的同含义项）：

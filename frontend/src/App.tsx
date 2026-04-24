@@ -4,6 +4,7 @@ import { ActivityBar } from "./components/ActivityBar";
 import { BottomPanel } from "./components/BottomPanel";
 import type { EditorTab } from "./components/EditorGroup";
 import { EditorGroup } from "./components/EditorGroup";
+import { AboutDialog } from "./components/AboutDialog";
 import { MenuBar } from "./components/MenuBar";
 import { PreferencesDialog } from "./components/PreferencesDialog";
 import { UserInfoDialog } from "./components/UserInfoDialog";
@@ -16,9 +17,7 @@ import {
   DeleteBlogFile,
   DeleteCustomReminder,
   EnsureWelcomeBlogFile,
-  GetBlogWorkDir,
-  GetJsonFormatterWorkDir,
-  GetReminderDBPath,
+  GetUITheme,
   GetWorkHourRecords,
   GetWorkHourShiftSchedule,
   ListBlogMarkdownFiles,
@@ -42,6 +41,7 @@ import {
   markReminderSqliteMigrationDone,
 } from "./utils/customRemindersStorage";
 import { normalizeCustomReminderRow } from "./utils/reminderRow";
+import { applyTheme } from "./theme";
 
 const OTHER_TAB_ID = "_home";
 const PR_LIST_PAGE_SIZE = 10;
@@ -80,6 +80,14 @@ function computeWorkHourOvertimeHours(records: AttendanceRecord[]): number {
 }
 
 export default function App() {
+  useEffect(() => {
+    void GetUITheme()
+      .then((t) => {
+        if (t === "light" || t === "dark") applyTheme(t);
+      })
+      .catch(() => {});
+  }, []);
+
   const [activity, setActivity] = useState<ActivityId>("blog");
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [panelHeight, setPanelHeight] = useState(200);
@@ -101,10 +109,7 @@ export default function App() {
 
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [userInfoOpen, setUserInfoOpen] = useState(false);
-  const [blogWorkDir, setBlogWorkDir] = useState("");
-  const [jsonFormatterWorkDir, setJsonFormatterWorkDir] = useState("");
-  const [reminderDbPath, setReminderDbPath] = useState("");
-
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [workHourRecords, setWorkHourRecords] = useState<AttendanceRecord[]>(
     [],
   );
@@ -298,18 +303,6 @@ export default function App() {
     } finally {
       setJsonDraftLoaded(true);
     }
-  }, []);
-
-  useEffect(() => {
-    void GetBlogWorkDir()
-      .then(setBlogWorkDir)
-      .catch(() => {});
-    void GetJsonFormatterWorkDir()
-      .then(setJsonFormatterWorkDir)
-      .catch(() => {});
-    void GetReminderDBPath()
-      .then(setReminderDbPath)
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -593,6 +586,11 @@ export default function App() {
       <MenuBar
         onOpenPreference={() => setPrefsOpen(true)}
         onOpenUserInfo={() => setUserInfoOpen(true)}
+        onOpenAbout={() => setAboutOpen(true)}
+      />
+      <AboutDialog
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
       />
       <UserInfoDialog
         open={userInfoOpen}
@@ -602,15 +600,6 @@ export default function App() {
         open={prefsOpen}
         onClose={() => setPrefsOpen(false)}
         onSaved={() => {
-          void GetBlogWorkDir()
-            .then(setBlogWorkDir)
-            .catch(() => {});
-          void GetJsonFormatterWorkDir()
-            .then(setJsonFormatterWorkDir)
-            .catch(() => {});
-          void GetReminderDBPath()
-            .then(setReminderDbPath)
-            .catch(() => {});
           void refreshBlogFromDisk();
           void loadWorkHour();
           void reloadJsonFormatterDraft();
@@ -699,11 +688,7 @@ export default function App() {
             ) : null}
           </div>
         </div>
-        <StatusBar
-          blogWorkDir={blogWorkDir}
-          jsonFormatterWorkDir={jsonFormatterWorkDir}
-          reminderDbPath={reminderDbPath}
-        />
+        <StatusBar />
       </div>
     </div>
   );

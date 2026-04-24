@@ -18,6 +18,8 @@ export function DeleteCustomReminder(arg1:string,arg2:string,arg3:string):Promis
 
 export function EnsureWelcomeBlogFile():Promise<void>;
 
+export function GetAboutInfo():Promise<main.AboutView>;
+
 export function GetBlogWorkDir():Promise<string>;
 
 export function GetDefaultBlogWorkDir():Promise<string>;
@@ -31,6 +33,10 @@ export function GetDefaultWorkHourDBPath():Promise<string>;
 export function GetJsonFormatterWorkDir():Promise<string>;
 
 export function GetReminderDBPath():Promise<string>;
+
+export function GetUITheme():Promise<string>;
+
+export function GetUserSettingsFilePath():Promise<string>;
 
 export function GetWorkHourDBPath():Promise<string>;
 
@@ -48,6 +54,8 @@ export function ReadBlogFile(arg1:string):Promise<string>;
 
 export function ReadJsonFormatterDraft():Promise<string>;
 
+export function ReadUserSettingsJSON():Promise<string>;
+
 export function RefreshPullRequestList(arg1:number,arg2:number):Promise<main.PullRequestListResponse>;
 
 export function RefreshWorkHourData():Promise<Array<main.AttendanceRecord>>;
@@ -62,6 +70,8 @@ export function SetJsonFormatterWorkDir(arg1:string):Promise<void>;
 
 export function SetReminderDBPath(arg1:string):Promise<void>;
 
+export function SetUITheme(arg1:string):Promise<void>;
+
 export function SetWorkHourDBPath(arg1:string):Promise<void>;
 
 export function UpdateCustomReminder(arg1:string,arg2:string,arg3:string):Promise<void>;
@@ -69,3 +79,5 @@ export function UpdateCustomReminder(arg1:string,arg2:string,arg3:string):Promis
 export function WriteBlogFile(arg1:string,arg2:string):Promise<void>;
 
 export function WriteJsonFormatterDraft(arg1:string):Promise<void>;
+
+export function WriteUserSettingsJSON(arg1:string):Promise<void>;
