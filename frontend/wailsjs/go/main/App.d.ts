@@ -80,6 +80,14 @@ export function SetUITheme(arg1:string):Promise<void>;
 
 export function SetWorkHourDBPath(arg1:string):Promise<void>;
 
+export function TerminalResize(arg1:number,arg2:number):Promise<void>;
+
+export function TerminalStart(arg1:string):Promise<void>;
+
+export function TerminalStop():Promise<void>;
+
+export function TerminalWrite(arg1:string):Promise<void>;
+
 export function UpdateCustomReminder(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function WriteBlogFile(arg1:string,arg2:string):Promise<void>;

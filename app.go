@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -26,6 +28,10 @@ type App struct {
 	workHourUserAccount   string
 	workHourBootstrapErr  error
 	workHourBootstrapDone chan struct{} // closed after first bootstrap attempt (success or fail)
+
+	muTerminal   sync.Mutex
+	terminalFile *os.File  // PTY master (unix only)
+	terminalCmd  *exec.Cmd // shell process
 }
 
 func NewApp() *App {

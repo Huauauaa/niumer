@@ -7,6 +7,7 @@ toolchain go1.26.2
 require (
 	github.com/chromedp/cdproto v0.0.0-20241022234722-4d5d5faf59fb
 	github.com/chromedp/chromedp v0.11.2
+	github.com/creack/pty v1.1.24
 	github.com/google/uuid v1.6.0
 	github.com/wailsapp/wails/v2 v2.12.0
 	gopkg.in/yaml.v3 v3.0.1

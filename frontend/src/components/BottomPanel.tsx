@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
+import { TerminalPane } from "./TerminalPane";
 
 type PanelTab = "terminal" | "problems" | "output";
 
@@ -16,6 +17,16 @@ export function BottomPanel({
   onToggle,
 }: Props) {
   const [tab, setTab] = useState<PanelTab>("terminal");
+  /** After first visit to Terminal while panel is open, keep PTY when switching tabs. */
+  const [terminalWarm, setTerminalWarm] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!visible) {
+      setTerminalWarm(false);
+      return;
+    }
+    if (tab === "terminal") setTerminalWarm(true);
+  }, [visible, tab]);
 
   if (!visible) {
     return (
@@ -34,6 +45,11 @@ export function BottomPanel({
     { id: "problems", label: "PROBLEMS" },
     { id: "output", label: "OUTPUT" },
   ];
+
+  const tabBlock = (active: boolean) =>
+    active
+      ? "absolute inset-0 flex min-h-0 flex-col overflow-hidden"
+      : "pointer-events-none invisible absolute inset-0 flex min-h-0 flex-col overflow-hidden";
 
   return (
     <div
@@ -76,34 +92,31 @@ export function BottomPanel({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto p-2 font-mono text-[12px] leading-relaxed text-[var(--vscode-fg)]">
-        {tab === "terminal" && (
-          <div>
-            <div className="text-[#6a9955]">$ npm run build</div>
-            <div className="text-[var(--vscode-editor-fg)]">
-              &gt; niumer-frontend@0.0.0 build
-            </div>
-            <div className="text-[var(--vscode-editor-fg)]">&gt; vite build</div>
-            <div className="text-[#569cd6]">
-              vite v5.x building for production...
-            </div>
-            <div className="text-[#6a9955]">✓ built in 420ms</div>
-            <div className="mt-2 flex items-center gap-1">
-              <span className="text-[var(--vscode-fg)]">$</span>
-              <span className="animate-pulse">▌</span>
-            </div>
+      <div className="relative min-h-0 flex-1">
+        {terminalWarm ? (
+          <div className={tabBlock(tab === "terminal")}>
+            <TerminalPane
+              panelOpen={visible}
+              shellAttention={tab === "terminal" && visible}
+            />
           </div>
-        )}
-        {tab === "problems" && (
+        ) : null}
+
+        <div
+          className={`${tabBlock(tab === "problems")} overflow-auto p-2 text-[12px] leading-relaxed text-[var(--vscode-fg)]`}
+        >
           <div className="text-[var(--vscode-fg-muted)]">
             No problems have been detected.
           </div>
-        )}
-        {tab === "output" && (
+        </div>
+
+        <div
+          className={`${tabBlock(tab === "output")} overflow-auto p-2 text-[12px] leading-relaxed text-[var(--vscode-fg)]`}
+        >
           <div className="text-[var(--vscode-fg-muted)]">
             Output channel is empty.
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

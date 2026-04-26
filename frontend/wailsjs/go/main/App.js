@@ -158,6 +158,22 @@ export function SetWorkHourDBPath(arg1) {
   return window['go']['main']['App']['SetWorkHourDBPath'](arg1);
 }
 
+export function TerminalResize(arg1, arg2) {
+  return window['go']['main']['App']['TerminalResize'](arg1, arg2);
+}
+
+export function TerminalStart(arg1) {
+  return window['go']['main']['App']['TerminalStart'](arg1);
+}
+
+export function TerminalStop() {
+  return window['go']['main']['App']['TerminalStop']();
+}
+
+export function TerminalWrite(arg1) {
+  return window['go']['main']['App']['TerminalWrite'](arg1);
+}
+
 export function UpdateCustomReminder(arg1, arg2, arg3) {
   return window['go']['main']['App']['UpdateCustomReminder'](arg1, arg2, arg3);
 }
