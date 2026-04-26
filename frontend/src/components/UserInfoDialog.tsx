@@ -71,7 +71,7 @@ export function UserInfoDialog({ open, onClose }: Props) {
           id="userinfo-title"
           className="m-0 mb-3 text-[13px] font-semibold text-[var(--vscode-fg)]"
         >
-          Profile
+          User info
         </h2>
         {loading && (
           <p className="mb-3 text-[12px] text-[var(--vscode-fg-muted)]">正在加载…</p>

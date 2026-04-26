@@ -26,6 +26,7 @@ import {
   ReadJsonFormatterDraft,
   RefreshPullRequestList,
   RefreshWorkHourData,
+  GetWorkHourUserProfile,
   RenameBlogFile,
   UpdateCustomReminder,
   WriteBlogFile,
@@ -116,6 +117,18 @@ export default function App() {
   const [workHourLoading, setWorkHourLoading] = useState(false);
   const [workHourError, setWorkHourError] = useState<string | null>(null);
   const [workHourShiftNameZh, setWorkHourShiftNameZh] = useState("");
+  /** Local SQLite work-hour profile; status bar + User info dialog. */
+  const [statusBarAccount, setStatusBarAccount] = useState<string | null>(null);
+
+  const refreshStatusBarAccount = useCallback(async () => {
+    try {
+      const p = await GetWorkHourUserProfile();
+      const a = (p?.userAccount ?? "").trim();
+      setStatusBarAccount(a || null);
+    } catch {
+      setStatusBarAccount(null);
+    }
+  }, []);
 
   const workHourOvertimeHours = useMemo(
     () => computeWorkHourOvertimeHours(workHourRecords),
@@ -274,8 +287,9 @@ export default function App() {
       setWorkHourRecords([]);
     } finally {
       setWorkHourLoading(false);
+      void refreshStatusBarAccount();
     }
-  }, []);
+  }, [refreshStatusBarAccount]);
 
   /** 爬取 → 入库 → 再查询展示 */
   const refreshWorkHour = useCallback(async () => {
@@ -293,8 +307,9 @@ export default function App() {
       setWorkHourError(e instanceof Error ? e.message : String(e));
     } finally {
       setWorkHourLoading(false);
+      void refreshStatusBarAccount();
     }
-  }, []);
+  }, [refreshStatusBarAccount]);
 
   const reloadJsonFormatterDraft = useCallback(async () => {
     setJsonDraftLoaded(false);
@@ -311,6 +326,10 @@ export default function App() {
   useEffect(() => {
     void reloadJsonFormatterDraft();
   }, [reloadJsonFormatterDraft]);
+
+  useEffect(() => {
+    void refreshStatusBarAccount();
+  }, [refreshStatusBarAccount]);
 
   useEffect(() => {
     if (!jsonDraftLoaded) return;
@@ -590,7 +609,6 @@ export default function App() {
     <div className="flex h-full flex-col bg-[var(--vscode-editor-bg)]">
       <MenuBar
         onOpenPreference={() => setPrefsOpen(true)}
-        onOpenUserInfo={() => setUserInfoOpen(true)}
         onOpenAbout={() => setAboutOpen(true)}
       />
       <AboutDialog
@@ -599,7 +617,10 @@ export default function App() {
       />
       <UserInfoDialog
         open={userInfoOpen}
-        onClose={() => setUserInfoOpen(false)}
+        onClose={() => {
+          setUserInfoOpen(false);
+          void refreshStatusBarAccount();
+        }}
       />
       <PreferencesDialog
         open={prefsOpen}
@@ -706,7 +727,10 @@ export default function App() {
             ) : null}
           </div>
         </div>
-        <StatusBar />
+        <StatusBar
+          account={statusBarAccount}
+          onAccountClick={() => setUserInfoOpen(true)}
+        />
       </div>
     </div>
   );
