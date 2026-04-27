@@ -43,8 +43,13 @@ func (a *App) workHourPostJSON(ctx context.Context, client *http.Client, u strin
 
 // workHourGet 使用当前缓存 Cookie 发 GET；若 HTTP 403 则重抓 Cookie 后重试一次。
 func (a *App) workHourGet(ctx context.Context, client *http.Client, u string) ([]byte, int, error) {
+	return a.workHourGetWithHeaders(ctx, client, u, nil)
+}
+
+// workHourGetWithHeaders 同 workHourGet，可附加请求头（如 pull_request_list_url 需 X-Requested-With）。
+func (a *App) workHourGetWithHeaders(ctx context.Context, client *http.Client, u string, headers map[string]string) ([]byte, int, error) {
 	ck := a.workHourCookiesForHTTP()
-	b, code, err := getWithCookies(ctx, client, u, ck)
+	b, code, err := getWithCookiesExtra(ctx, client, u, ck, headers)
 	if err != nil {
 		return b, code, err
 	}
@@ -55,7 +60,7 @@ func (a *App) workHourGet(ctx context.Context, client *http.Client, u string) ([
 		return b, code, fmt.Errorf("HTTP 403 后重取 Cookie: %w", rerr)
 	}
 	ck2 := a.workHourCookiesForHTTP()
-	return getWithCookies(ctx, client, u, ck2)
+	return getWithCookiesExtra(ctx, client, u, ck2, headers)
 }
 
 // loadWorkHourUserFromDBIntoMemory 在 SQLite 已有 userAccount/ hrId/ 班次 时，仅写回内存，不请求网络。

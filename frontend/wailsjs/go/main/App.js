@@ -70,6 +70,10 @@ export function GetJsonFormatterWorkDir() {
   return window['go']['main']['App']['GetJsonFormatterWorkDir']();
 }
 
+export function GetPullRequestListTotal() {
+  return window['go']['main']['App']['GetPullRequestListTotal']();
+}
+
 export function GetReminderDBPath() {
   return window['go']['main']['App']['GetReminderDBPath']();
 }

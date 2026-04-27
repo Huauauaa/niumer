@@ -36,6 +36,8 @@ export function GetDefaultWorkHourDBPath():Promise<string>;
 
 export function GetJsonFormatterWorkDir():Promise<string>;
 
+export function GetPullRequestListTotal():Promise<number>;
+
 export function GetReminderDBPath():Promise<string>;
 
 export function GetUITheme():Promise<string>;

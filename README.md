@@ -39,7 +39,7 @@ wails dev
 
 `wails dev` 会安装前端依赖、启动 Vite 开发服务并启动桌面窗口。
 
-**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。同进程还提供 **`POST /v1/chat/completions`**（OpenAI 兼容，与 niumer AI 路径一致；请求体含 **`"stream": true`** 时返回 **SSE**）及别名 **`POST /chat/completions`**，便于把应用内 AI 的 Base URL 设为 `http://127.0.0.1:17890` 做本地流式联调。`configs/config.yaml` 中 `workhour` 的 URL 与 `pull_request_list_url` 可指向该 mock（同 `workhour_url` 模式）。**Pull Request** 列表由 Go **`RefreshPullRequestList`** 使用与考勤相同的浏览器 Cookie 请求 `pull_request_list_url`（可 **`PULL_REQUEST_LIST_URL` 环境变量**覆盖）；**Pull Request** 活动栏使用返回数据；右侧 iframe 打开选中项的 `url`（mock 下为同机 `GET /pr-preview/{id}` 页面）。需先让应用在启动时完成考勤登录/tenant/user-info，以便带 Cookie 访问上述 GET。
+**考勤 mock 与 Pull Request 列表**：另开终端在项目根执行 `go run ./cmd/mockserver`（默认 `http://127.0.0.1:17890`）。同进程还提供 **`POST /v1/chat/completions`**（OpenAI 兼容，与 niumer AI 路径一致；请求体含 **`"stream": true`** 时返回 **SSE**）及别名 **`POST /chat/completions`**，便于把应用内 AI 的 Base URL 设为 `http://127.0.0.1:17890` 做本地流式联调。`configs/config.yaml` 中 `workhour` 的 URL 与 `pull_request_list_url` 可指向该 mock（同 `workhour_url` 模式）。**Pull Request** 列表由 Go **`RefreshPullRequestList`** 使用与考勤相同的浏览器 Cookie 请求 `pull_request_list_url`（可 **`PULL_REQUEST_LIST_URL` 环境变量**覆盖），列表 JSON 为 **MR 对象数组**（与生产接口字段一致），在应用内归一化后再给侧栏与 iframe；`web_url` 在 mock 下指向同机 `GET /pr-preview/{id}`。需先让应用在启动时完成考勤登录/tenant/user-info，以便带 Cookie 访问上述 GET。
 
 ### Makefile 快捷命令
 
@@ -98,7 +98,8 @@ npm run dev
 - `WORK_HOUR_LOGIN_URL`、`WORK_HOUR_WAIT_CSS`
 - `WORK_HOUR_CHROME_PATH`（Chrome/Chromium 可执行文件路径）
 - `WORK_HOUR_TENANT_URL`、`WORK_HOUR_USER_INFO_URL`（考勤 **user-info** 接口 URL，默认 `…/user-info`）、`WORK_HOUR_WORKHOUR_URL`（考勤明细列表接口，对应 YAML `workhour_url`）
-- `PULL_REQUEST_LIST_URL`：Pull Request 列表 HTTP **GET** URL（query：`page`、`page_size`；与 `workhour_url` 同会话 Cookie；对应 YAML `pull_request_list_url`）。本地可与 mockserver 一致：`http://127.0.0.1:17890/pull-request`（`go run ./cmd/mockserver` 后，先完成考勤启动流程再打开 PR 页，以便带上 Cookie）
+- `PULL_REQUEST_LIST_URL`：Pull Request 列表 HTTP **GET** URL（query：`page`、`page_size`；与 `workhour_url` 同会话 Cookie；请求头 **`X-Requested-With: XMLHttpRequest`**；对应 YAML `pull_request_list_url`）。上游响应为 **JSON 数组**，元素为 MR 对象（`iid`、`web_url`、`source_branch`、`author` 等 snake_case）；应用映射为侧栏使用的统一结构并推导分页。仍兼容旧版 `{ "items", "total", … }` 包络。本地 mock：`http://127.0.0.1:17890/pull-request`（`go run ./cmd/mockserver` 后，先完成考勤启动流程再打开 PR 页，以便带上 Cookie）
+- `PULL_REQUEST_TOTAL_URL`（可选）：MR **总数**专用 **GET** URL（与列表相同 Cookie 与 `X-Requested-With`），响应为 JSON 数字或 `{"total":N}` 等；对应 YAML `pull_request_total_url`。未配置时 **`GetPullRequestListTotal`** 从列表 URL 读取顶层 `total`，否则按页累加条数。本地 mock：`http://127.0.0.1:17890/pull-request/total` → `{"total":47}`
 
 首次克隆或新增依赖后，在项目根执行：`make tidy` 或 `go mod tidy`。
 

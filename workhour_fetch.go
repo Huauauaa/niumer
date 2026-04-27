@@ -64,11 +64,18 @@ func postJSON(ctx context.Context, client *http.Client, url string, body any, co
 }
 
 func getWithCookies(ctx context.Context, client *http.Client, u string, cookies map[string]string) ([]byte, int, error) {
+	return getWithCookiesExtra(ctx, client, u, cookies, nil)
+}
+
+func getWithCookiesExtra(ctx context.Context, client *http.Client, u string, cookies map[string]string, extra map[string]string) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return nil, 0, err
 	}
 	addCookies(req, cookies)
+	for k, v := range extra {
+		req.Header.Set(k, v)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, 0, err

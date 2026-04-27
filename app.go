@@ -20,7 +20,7 @@ type App struct {
 	workHourEffWindows []workHourTimeWindow
 
 	// 1）启动：chromedp 取 Cookie 全局缓存；2）若 SQLite 已有 userAccount+hrId 则仅从库恢复用户态，否则 tenant + /user-info 后落库；
-	// 3）各接口用 workHourPostJSON/workHourGet，遇 403 则重取 Cookie 再发一次。PR 等 GET 走 workHourGet；工时 POST 见 workHourPostJSON。
+	// 3）各接口用 workHourPostJSON/workHourGet，遇 403 则重取 Cookie 再发一次。PR 列表 RefreshPullRequestList、总数 GetPullRequestListTotal；GET 与考勤同 Cookie。工时 POST 见 workHourPostJSON。
 	muWorkHourAuth        sync.RWMutex
 	muWorkHourCookieCrawl sync.Mutex // 串行 chromedp 取 Cookie，避免与 403 重登入并发
 	workHourCookies       map[string]string

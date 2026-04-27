@@ -19,8 +19,12 @@ type WorkHourSettings struct {
 	UserInfoURL string `yaml:"user_info_url"`
 	// WorkHourURL is the POST URL for the attendance records / work-hour list API.
 	WorkHourURL string `yaml:"workhour_url"`
-	// PullRequestListURL is the GET URL for the paginated pull request list (query: page, page_size).
+	// PullRequestListURL is the GET URL for the pull request list (query: page, page_size).
+	// Upstream returns a JSON array of MR objects (snake_case); see pull_request_fetch.go.
 	PullRequestListURL string `yaml:"pull_request_list_url"`
+	// PullRequestTotalURL is an optional GET URL for the total MR count (JSON: {"total": N} or N).
+	// When empty, GetPullRequestListTotal derives the count from PullRequestListURL.
+	PullRequestTotalURL string `yaml:"pull_request_total_url"`
 }
 
 // Root is the top-level application YAML shape.
@@ -85,6 +89,9 @@ func mergeWorkHour(base, over WorkHourSettings) WorkHourSettings {
 	}
 	if strings.TrimSpace(over.PullRequestListURL) != "" {
 		out.PullRequestListURL = over.PullRequestListURL
+	}
+	if strings.TrimSpace(over.PullRequestTotalURL) != "" {
+		out.PullRequestTotalURL = over.PullRequestTotalURL
 	}
 	return out
 }
