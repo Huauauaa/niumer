@@ -113,11 +113,25 @@ body {
   word-wrap: break-word;
 }
 
-.vscode-markdown-body * {
+.chat-markdown-body {
+  box-sizing: border-box;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.vscode-markdown-body *,
+.chat-markdown-body * {
   box-sizing: border-box;
 }
 
-.vscode-markdown-body > *:first-child {
+.vscode-markdown-body > *:first-child,
+.chat-markdown-body > *:first-child {
   margin-top: 0 !important;
 }
 
@@ -126,7 +140,13 @@ body {
 .vscode-markdown-body h3,
 .vscode-markdown-body h4,
 .vscode-markdown-body h5,
-.vscode-markdown-body h6 {
+.vscode-markdown-body h6,
+.chat-markdown-body h1,
+.chat-markdown-body h2,
+.chat-markdown-body h3,
+.chat-markdown-body h4,
+.chat-markdown-body h5,
+.chat-markdown-body h6 {
   margin-top: 1.4em;
   margin-bottom: 0.45em;
   font-weight: 600;
@@ -134,75 +154,91 @@ body {
   color: var(--vscode-fg-heading);
 }
 
-.vscode-markdown-body h1 {
+.vscode-markdown-body h1,
+.chat-markdown-body h1 {
   padding-bottom: 0.25em;
   font-size: 1.85em;
   font-weight: 600;
   border-bottom: 1px solid var(--vscode-border);
 }
 
-.vscode-markdown-body h2 {
+.vscode-markdown-body h2,
+.chat-markdown-body h2 {
   padding-bottom: 0.2em;
   font-size: 1.45em;
   border-bottom: 1px solid var(--vscode-border);
 }
 
-.vscode-markdown-body h3 {
+.vscode-markdown-body h3,
+.chat-markdown-body h3 {
   font-size: 1.2em;
 }
 
-.vscode-markdown-body h4 {
+.vscode-markdown-body h4,
+.chat-markdown-body h4 {
   font-size: 1.05em;
 }
 
-.vscode-markdown-body p {
+.vscode-markdown-body p,
+.chat-markdown-body p {
   margin: 0 0 0.85em;
 }
 
-.vscode-markdown-body a {
+.vscode-markdown-body a,
+.chat-markdown-body a {
   color: #4fc1ff;
   text-decoration: none;
 }
 
-.vscode-markdown-body a:hover {
+.vscode-markdown-body a:hover,
+.chat-markdown-body a:hover {
   text-decoration: underline;
 }
 
-.vscode-markdown-body strong {
+.vscode-markdown-body strong,
+.chat-markdown-body strong {
   font-weight: 600;
   color: var(--vscode-fg-heading);
 }
 
 .vscode-markdown-body ul,
-.vscode-markdown-body ol {
+.vscode-markdown-body ol,
+.chat-markdown-body ul,
+.chat-markdown-body ol {
   margin: 0 0 0.85em;
   padding-left: 1.6em;
 }
 
-.vscode-markdown-body li {
+.vscode-markdown-body li,
+.chat-markdown-body li {
   margin: 0.2em 0;
 }
 
 .vscode-markdown-body li > ul,
-.vscode-markdown-body li > ol {
+.vscode-markdown-body li > ol,
+.chat-markdown-body li > ul,
+.chat-markdown-body li > ol {
   margin-bottom: 0;
 }
 
-.vscode-markdown-body blockquote {
+.vscode-markdown-body blockquote,
+.chat-markdown-body blockquote {
   margin: 0 0 0.85em;
   padding: 0 0 0 0.9em;
   color: var(--vscode-fg-muted);
   border-left: 4px solid var(--vscode-border);
 }
 
-.vscode-markdown-body hr {
+.vscode-markdown-body hr,
+.chat-markdown-body hr {
   height: 0;
   margin: 1.25em 0;
   border: 0;
   border-top: 1px solid var(--vscode-border);
 }
 
-.vscode-markdown-body code {
+.vscode-markdown-body code,
+.chat-markdown-body code {
   padding: 0.15em 0.35em;
   font-family:
     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
@@ -213,7 +249,8 @@ body {
   border-radius: 3px;
 }
 
-.vscode-markdown-body pre {
+.vscode-markdown-body pre,
+.chat-markdown-body pre {
   margin: 0 0 1em;
   padding: 12px 14px;
   overflow: auto;
@@ -225,7 +262,8 @@ body {
   border-radius: 4px;
 }
 
-.vscode-markdown-body pre code {
+.vscode-markdown-body pre code,
+.chat-markdown-body pre code {
   padding: 0;
   color: inherit;
   background: transparent;
@@ -233,7 +271,8 @@ body {
   font-size: inherit;
 }
 
-.vscode-markdown-body table {
+.vscode-markdown-body table,
+.chat-markdown-body table {
   width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
@@ -241,37 +280,45 @@ body {
 }
 
 .vscode-markdown-body th,
-.vscode-markdown-body td {
+.vscode-markdown-body td,
+.chat-markdown-body th,
+.chat-markdown-body td {
   padding: 6px 10px;
   border: 1px solid var(--vscode-border);
 }
 
-.vscode-markdown-body th {
+.vscode-markdown-body th,
+.chat-markdown-body th {
   font-weight: 600;
   color: var(--vscode-fg-heading);
   background: rgba(255, 255, 255, 0.04);
 }
 
-.vscode-markdown-body tr:nth-child(even) td {
+.vscode-markdown-body tr:nth-child(even) td,
+.chat-markdown-body tr:nth-child(even) td {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.vscode-markdown-body img {
+.vscode-markdown-body img,
+.chat-markdown-body img {
   max-width: 100%;
   height: auto;
 }
 
-.vscode-markdown-body input[type="checkbox"] {
+.vscode-markdown-body input[type="checkbox"],
+.chat-markdown-body input[type="checkbox"] {
   margin-right: 0.35em;
   vertical-align: middle;
 }
 
-.vscode-markdown-body .contains-task-list {
+.vscode-markdown-body .contains-task-list,
+.chat-markdown-body .contains-task-list {
   list-style: none;
   padding-left: 0;
 }
 
-.vscode-markdown-body .task-list-item {
+.vscode-markdown-body .task-list-item,
+.chat-markdown-body .task-list-item {
   list-style: none;
   margin-left: 0;
 }

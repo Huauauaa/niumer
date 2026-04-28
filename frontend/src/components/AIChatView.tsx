@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AIChatStream, GetAISettings, SetAISettings } from "../../wailsjs/go/main/App";
 import { EventsOn } from "../../wailsjs/runtime/runtime";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Phase = "loading" | "setup" | "chat";
 
@@ -9,6 +11,22 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
 };
+
+function ChatMarkdown({ markdown, tone }: { markdown: string; tone: "user" | "assistant" }) {
+  const isUser = tone === "user";
+  return (
+    <div
+      className={[
+        "chat-markdown-body",
+        "min-w-0",
+        "break-words",
+        isUser ? "text-white [&_a]:text-white [&_code]:text-white" : "",
+      ].join(" ")}
+    >
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown || "\u00a0"}</ReactMarkdown>
+    </div>
+  );
+}
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -28,9 +46,11 @@ export function AIChatView({ resetKey, settingsNonce }: Props) {
   const [model, setModel] = useState("deepseek-chat");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [inputPreview, setInputPreview] = useState(false);
   const [sending, setSending] = useState(false);
   const [setupSaving, setSetupSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   /** 侧栏「连接设置」：已配置时在对话上方弹出表单，不离开聊天页 */
   const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -108,9 +128,41 @@ export function AIChatView({ resetKey, settingsNonce }: Props) {
   useEffect(() => {
     setMessages([]);
     setInput("");
+    setInputPreview(false);
     setError(null);
+    setCopiedMsgId(null);
     setConnectionDialogOpen(false);
   }, [resetKey]);
+
+  const copyMessage = useCallback(async (id: string, text: string) => {
+    const markCopied = () => {
+      setCopiedMsgId(id);
+      window.setTimeout(() => {
+        setCopiedMsgId((prev) => (prev === id ? null : prev));
+      }, 1000);
+    };
+    try {
+      await navigator.clipboard.writeText(text);
+      markCopied();
+      return;
+    } catch {
+      // ignore
+    }
+    // Fallback for older environments.
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    ta.style.top = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      if (document.execCommand("copy")) markCopied();
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }, []);
 
   useEffect(() => {
     if (settingsNonce <= prevSettingsNonce.current) return;
@@ -415,13 +467,68 @@ export function AIChatView({ resetKey, settingsNonce }: Props) {
               className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
+                className={`group relative max-w-[85%] rounded-2xl px-4 pb-10 pt-2.5 text-[14px] leading-relaxed ${
                   m.role === "user"
                     ? "bg-[#4a9eff] text-white"
                     : "border border-[var(--vscode-border)] bg-[var(--vscode-sideBar-bg)] text-[var(--vscode-editor-fg)]"
                 }`}
               >
-                <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                <button
+                  type="button"
+                  aria-label="Copy message"
+                  title={copiedMsgId === m.id ? "已复制" : "Copy"}
+                  className={[
+                    "absolute",
+                    "bottom-2",
+                    m.role === "user" ? "right-2" : "left-2",
+                    "flex",
+                    "h-8",
+                    "w-9",
+                    "flex-col",
+                    "items-center",
+                    "justify-center",
+                    "gap-0.5",
+                    "rounded-xl",
+                    "border",
+                    "border-[var(--vscode-border)]",
+                    "bg-[var(--vscode-sideBar-bg)]",
+                    "text-[10px]",
+                    "text-[var(--vscode-fg)]",
+                    "shadow-sm",
+                    "opacity-0",
+                    "pointer-events-none",
+                    "transition-opacity",
+                    "group-hover:opacity-100",
+                    "group-hover:pointer-events-auto",
+                    "hover:bg-[var(--vscode-list-hover)]",
+                    m.role === "user" ? "border-white/25 bg-black/15 text-white" : "",
+                  ].join(" ")}
+                  onClick={() => void copyMessage(m.id, m.content)}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9 9h10v12H9V9Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="leading-none">{copiedMsgId === m.id ? "OK" : "Copy"}</span>
+                </button>
+                <ChatMarkdown markdown={m.content} tone={m.role} />
               </div>
             </div>
           ))}
@@ -441,27 +548,44 @@ export function AIChatView({ resetKey, settingsNonce }: Props) {
       ) : null}
       <div className="shrink-0 border-t border-[var(--vscode-border)] px-4 pb-4 pt-3">
         <div className="mx-auto flex max-w-3xl gap-2">
-          <textarea
-            className="min-h-[48px] flex-1 resize-none rounded-2xl border border-[var(--vscode-border)] bg-[var(--vscode-input-bg)] px-4 py-3 text-[14px] text-[var(--vscode-fg)] outline-none ring-[var(--vscode-focus-ring)] focus:ring-1"
-            rows={2}
-            placeholder="给 AI 发送消息…"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter" || e.shiftKey) return;
-              if (e.nativeEvent.isComposing) return;
-              e.preventDefault();
-              void handleSend();
-            }}
-          />
-          <button
-            type="button"
-            className="self-end rounded-2xl bg-[#4a9eff] px-5 py-3 text-[14px] font-medium text-white transition hover:bg-[#3d8eef] disabled:opacity-40"
-            disabled={sending || !input.trim()}
-            onClick={() => void handleSend()}
-          >
-            发送
-          </button>
+          <div className="min-h-[48px] flex-1 rounded-2xl border border-[var(--vscode-border)] bg-[var(--vscode-input-bg)] px-4 py-3 ring-[var(--vscode-focus-ring)] focus-within:ring-1">
+            {inputPreview ? (
+              <div className="allow-select max-h-[220px] overflow-auto">
+                <ChatMarkdown markdown={input || "（空）"} tone="assistant" />
+              </div>
+            ) : (
+              <textarea
+                className="min-h-[48px] w-full resize-none bg-transparent text-[14px] text-[var(--vscode-fg)] outline-none"
+                rows={2}
+                placeholder="给 AI 发送消息…（支持 Markdown）"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" || e.shiftKey) return;
+                  if (e.nativeEvent.isComposing) return;
+                  e.preventDefault();
+                  void handleSend();
+                }}
+              />
+            )}
+          </div>
+          <div className="flex shrink-0 flex-col justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-xl border border-[var(--vscode-border)] px-4 py-2 text-[13px] text-[var(--vscode-fg)] hover:bg-[var(--vscode-list-hover)]"
+              onClick={() => setInputPreview((v) => !v)}
+            >
+              {inputPreview ? "编辑" : "预览"}
+            </button>
+            <button
+              type="button"
+              className="rounded-xl bg-[#4a9eff] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3d8eef] disabled:opacity-40"
+              disabled={sending || !input.trim()}
+              onClick={() => void handleSend()}
+            >
+              发送
+            </button>
+          </div>
         </div>
       </div>
     </div>
