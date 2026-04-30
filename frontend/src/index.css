@@ -271,6 +271,34 @@ body {
   font-size: inherit;
 }
 
+.vscode-markdown-body .mermaid {
+  margin: 0 0 1em;
+  padding: 12px 14px;
+  overflow: auto;
+  background: var(--vscode-gutter-bg);
+  border: 1px solid var(--vscode-border);
+  border-radius: 4px;
+}
+
+.vscode-markdown-body .mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.vscode-markdown-body .mermaid-loading,
+.vscode-markdown-body .mermaid-error {
+  margin: 0 0 1em;
+  padding: 12px 14px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--vscode-editor-fg);
+  background: var(--vscode-gutter-bg);
+  border: 1px solid var(--vscode-border);
+  border-radius: 4px;
+}
+
 .vscode-markdown-body table,
 .chat-markdown-body table {
   width: 100%;
