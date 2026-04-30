@@ -5,6 +5,7 @@ import { AIChatView } from "./AIChatView";
 import { HolidayReminderView } from "./HolidayReminderView";
 import { JsonFormatterView } from "./JsonFormatterView";
 import { MarkdownPreview } from "./MarkdownPreview";
+import { SQLiteToolView } from "./SQLiteToolView";
 import { WorkHourView } from "./WorkHourView";
 
 export type EditorTab = { id: string; title: string; dirty?: boolean };
@@ -31,6 +32,8 @@ type Props = {
   jsonFormatterView?: boolean;
   jsonFormatterContent?: string;
   onJsonFormatterContentChange?: (value: string) => void;
+  /** Tool: SQLite browser/editor */
+  sqliteToolView?: boolean;
   /** Pull Request: iframe preview of selected item URL */
   pullRequestView?: boolean;
   pullRequestPreviewUrl?: string | null;
@@ -79,6 +82,7 @@ export function EditorGroup({
   jsonFormatterView = false,
   jsonFormatterContent = "",
   onJsonFormatterContentChange,
+  sqliteToolView = false,
   pullRequestView = false,
   pullRequestPreviewUrl = null,
   pullRequestBreadcrumbLabel,
@@ -197,6 +201,13 @@ export function EditorGroup({
                   JSON formatter
                 </span>
               </>
+            ) : sqliteToolView ? (
+              <>
+                tool ›{" "}
+                <span className="text-[var(--vscode-breadcrumb-accent)]">
+                  SQLite
+                </span>
+              </>
             ) : pullRequestView ? (
               <>
                 pull-request ›{" "}
@@ -257,6 +268,8 @@ export function EditorGroup({
             value={jsonFormatterContent}
             onChange={onJsonFormatterContentChange}
           />
+        ) : sqliteToolView ? (
+          <SQLiteToolView />
         ) : blogEditor ? (
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="allow-select flex min-h-0 min-w-0 flex-1 overflow-hidden font-mono text-[13px] leading-6">

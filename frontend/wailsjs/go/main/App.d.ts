@@ -12,6 +12,8 @@ export function ChooseJsonFormatterWorkDir():Promise<string>;
 
 export function ChooseReminderDBPath():Promise<string>;
 
+export function ChooseSQLiteDBPath():Promise<string>;
+
 export function ChooseWorkHourDBPath():Promise<string>;
 
 export function DeleteBlogFile(arg1:string):Promise<void>;
@@ -69,6 +71,22 @@ export function RefreshWorkHourData():Promise<Array<main.AttendanceRecord>>;
 export function RefreshWorkHourUserInfo():Promise<main.WorkHourUserProfileView>;
 
 export function RenameBlogFile(arg1:string,arg2:string):Promise<void>;
+
+export function SQLiteToolDeleteRow(arg1:string,arg2:Record<string, any>):Promise<void>;
+
+export function SQLiteToolDescribeTable(arg1:string):Promise<main.SQLiteTableInfo>;
+
+export function SQLiteToolGetDBPath():Promise<string>;
+
+export function SQLiteToolInsertRow(arg1:string,arg2:Record<string, any>):Promise<void>;
+
+export function SQLiteToolListTables():Promise<Array<string>>;
+
+export function SQLiteToolOpenDB(arg1:string):Promise<void>;
+
+export function SQLiteToolQueryTable(arg1:string,arg2:number,arg3:number):Promise<main.SQLiteQueryResult>;
+
+export function SQLiteToolUpdateRow(arg1:string,arg2:Record<string, any>,arg3:Record<string, any>):Promise<void>;
 
 export function SetAISettings(arg1:string,arg2:string,arg3:string):Promise<void>;
 

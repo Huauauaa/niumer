@@ -22,6 +22,10 @@ export function ChooseReminderDBPath() {
   return window['go']['main']['App']['ChooseReminderDBPath']();
 }
 
+export function ChooseSQLiteDBPath() {
+  return window['go']['main']['App']['ChooseSQLiteDBPath']();
+}
+
 export function ChooseWorkHourDBPath() {
   return window['go']['main']['App']['ChooseWorkHourDBPath']();
 }
@@ -136,6 +140,38 @@ export function RefreshWorkHourUserInfo() {
 
 export function RenameBlogFile(arg1, arg2) {
   return window['go']['main']['App']['RenameBlogFile'](arg1, arg2);
+}
+
+export function SQLiteToolDeleteRow(arg1, arg2) {
+  return window['go']['main']['App']['SQLiteToolDeleteRow'](arg1, arg2);
+}
+
+export function SQLiteToolDescribeTable(arg1) {
+  return window['go']['main']['App']['SQLiteToolDescribeTable'](arg1);
+}
+
+export function SQLiteToolGetDBPath() {
+  return window['go']['main']['App']['SQLiteToolGetDBPath']();
+}
+
+export function SQLiteToolInsertRow(arg1, arg2) {
+  return window['go']['main']['App']['SQLiteToolInsertRow'](arg1, arg2);
+}
+
+export function SQLiteToolListTables() {
+  return window['go']['main']['App']['SQLiteToolListTables']();
+}
+
+export function SQLiteToolOpenDB(arg1) {
+  return window['go']['main']['App']['SQLiteToolOpenDB'](arg1);
+}
+
+export function SQLiteToolQueryTable(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SQLiteToolQueryTable'](arg1, arg2, arg3);
+}
+
+export function SQLiteToolUpdateRow(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SQLiteToolUpdateRow'](arg1, arg2, arg3);
 }
 
 export function SetAISettings(arg1, arg2, arg3) {

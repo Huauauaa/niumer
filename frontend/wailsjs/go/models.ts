@@ -208,6 +208,104 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class SQLiteColumn {
+	    name: string;
+	    type: string;
+	    notNull: boolean;
+	    pk: boolean;
+	    default: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new SQLiteColumn(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.type = source["type"];
+	        this.notNull = source["notNull"];
+	        this.pk = source["pk"];
+	        this.default = source["default"];
+	    }
+	}
+	export class SQLiteQueryResult {
+	    table: string;
+	    columns: SQLiteColumn[];
+	    pkColumns: string[];
+	    rows: any[];
+	    total: number;
+	    limit: number;
+	    offset: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SQLiteQueryResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.table = source["table"];
+	        this.columns = this.convertValues(source["columns"], SQLiteColumn);
+	        this.pkColumns = source["pkColumns"];
+	        this.rows = source["rows"];
+	        this.total = source["total"];
+	        this.limit = source["limit"];
+	        this.offset = source["offset"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class SQLiteTableInfo {
+	    table: string;
+	    columns: SQLiteColumn[];
+	    pkColumns: string[];
+	    rowId: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SQLiteTableInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.table = source["table"];
+	        this.columns = this.convertValues(source["columns"], SQLiteColumn);
+	        this.pkColumns = source["pkColumns"];
+	        this.rowId = source["rowId"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class WorkHourUserProfileView {
 	    userAccount: string;
 	    hrId: number;

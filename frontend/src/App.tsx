@@ -151,6 +151,7 @@ export default function App() {
 
   const [aiChatResetKey, setAiChatResetKey] = useState(0);
   const [aiSettingsNonce, setAiSettingsNonce] = useState(0);
+  const [toolActive, setToolActive] = useState<"json" | "sqlite">("json");
 
   const dragRef = useRef<"sidebar" | "panel" | null>(null);
 
@@ -583,7 +584,13 @@ export default function App() {
       : activity === "workhour"
         ? [{ id: OTHER_TAB_ID, title: "Workhour", dirty: false }]
         : activity === "tool"
-          ? [{ id: OTHER_TAB_ID, title: "JSON formatter", dirty: false }]
+          ? [
+              {
+                id: OTHER_TAB_ID,
+                title: toolActive === "sqlite" ? "SQLite" : "JSON formatter",
+                dirty: false,
+              },
+            ]
           : activity === "pullRequest"
             ? [
                 {
@@ -686,6 +693,8 @@ export default function App() {
                 ? () => setAiSettingsNonce((n) => n + 1)
                 : undefined
             }
+            toolActive={toolActive}
+            onToolSelect={setToolActive}
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <EditorGroup
@@ -705,9 +714,10 @@ export default function App() {
               workHourLoading={workHourLoading}
               workHourError={workHourError}
               onRefreshWorkHour={refreshWorkHour}
-              jsonFormatterView={activity === "tool"}
+              jsonFormatterView={activity === "tool" && toolActive === "json"}
               jsonFormatterContent={jsonFormatterText}
               onJsonFormatterContentChange={setJsonFormatterText}
+              sqliteToolView={activity === "tool" && toolActive === "sqlite"}
               pullRequestView={activity === "pullRequest"}
               pullRequestPreviewUrl={prSelected?.url ?? null}
               pullRequestBreadcrumbLabel={pullRequestBreadcrumb}

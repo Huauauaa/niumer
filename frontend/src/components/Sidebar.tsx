@@ -44,6 +44,9 @@ type Props = {
   /** AI activity: reset chat / open connection form */
   onAINewChat?: () => void;
   onAIOpenSettings?: () => void;
+  /** Tool activity: which tool is active */
+  toolActive?: "json" | "sqlite";
+  onToolSelect?: (id: "json" | "sqlite") => void;
 };
 
 const rowClass =
@@ -307,6 +310,8 @@ function SidebarBody({
   onReminderDelete,
   onAINewChat,
   onAIOpenSettings,
+  toolActive = "json",
+  onToolSelect,
 }: Omit<Props, "width" | "onResizeStart">) {
   if (activity === "blog") {
     return (
@@ -328,9 +333,21 @@ function SidebarBody({
           Tool
         </div>
         <div className="flex flex-col gap-0.5 px-1 pb-2">
-          <button type="button" className={rowClass}>
+          <button
+            type="button"
+            className={`${rowClass} ${toolActive === "json" ? selectedRow : ""}`}
+            onClick={() => onToolSelect?.("json")}
+          >
             <span className="text-[#569cd6]">{}</span>
             <span>JSON formatter</span>
+          </button>
+          <button
+            type="button"
+            className={`${rowClass} ${toolActive === "sqlite" ? selectedRow : ""}`}
+            onClick={() => onToolSelect?.("sqlite")}
+          >
+            <span className="text-[#6a9955]">DB</span>
+            <span>SQLite</span>
           </button>
         </div>
       </div>

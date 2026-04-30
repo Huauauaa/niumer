@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 	"os/exec"
@@ -32,6 +33,10 @@ type App struct {
 	muTerminal   sync.Mutex
 	terminalFile *os.File  // PTY master (unix only)
 	terminalCmd  *exec.Cmd // shell process
+
+	muSQLiteTool sync.Mutex
+	sqliteToolDBPath string
+	sqliteToolDB     *sql.DB
 }
 
 func NewApp() *App {
